@@ -1,43 +1,47 @@
-title: ydb-orm
+title: YCForge
 href: index.md
 navigation:
   logo:
     icon: logo.png
-    text: ydb-orm
+    text: YCForge
   header:
     iconSize: 28
     rightItems:
       - type: controls
 items:
-  - name: Overview
+  - name: Home
     href: index.md
-  - name: Installation
-    href: installation.md
-  - name: Quick start
-    href: quick-start.md
-  - name: Entities & decorators
-    href: entity.md
-  - name: Active Record
-    href: active-record.md
-  - name: QueryBuilder
-    href: query-builder.md
-  - name: Relations
-    href: relations.md
-  - name: Field encryption
-    href: encryption.md
-  - name: Schema sync
-    href: schema-sync.md
-  - name: Migrations
-    href: migrations.md
-  - name: Transactions
-    href: transactions.md
-  - name: Authentication
-    href: authentication.md
-  - name: Standalone usage
-    href: standalone.md
-  - name: Validation
-    href: validation.md
-  - name: API reference
-    href: api.md
-  - name: Development
-    href: development.md
+  - name: ydb-orm
+    items:
+      - name: Overview
+        href: ydb-orm/index.md
+      - name: Installation
+        href: ydb-orm/installation.md
+      - name: Quick start
+        href: ydb-orm/quick-start.md
+      - name: Entities & decorators
+        href: ydb-orm/entity.md
+      - name: Active Record
+        href: ydb-orm/active-record.md
+      - name: QueryBuilder
+        href: ydb-orm/query-builder.md
+      - name: Relations
+        href: ydb-orm/relations.md
+      - name: Field encryption
+        href: ydb-orm/encryption.md
+      - name: Schema sync
+        href: ydb-orm/schema-sync.md
+      - name: Migrations
+        href: ydb-orm/migrations.md
+      - name: Transactions
+        href: ydb-orm/transactions.md
+      - name: Authentication
+        href: ydb-orm/authentication.md
+      - name: Standalone usage
+        href: ydb-orm/standalone.md
+      - name: Validation
+        href: ydb-orm/validation.md
+      - name: API reference
+        href: ydb-orm/api.md
+      - name: Development
+        href: ydb-orm/development.md

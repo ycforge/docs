@@ -1,43 +1,47 @@
-title: ydb-orm
+title: YCForge
 href: index.md
 navigation:
   logo:
     icon: logo.png
-    text: ydb-orm
+    text: YCForge
   header:
     iconSize: 28
     rightItems:
       - type: controls
 items:
-  - name: Обзор
+  - name: Главная
     href: index.md
-  - name: Установка
-    href: installation.md
-  - name: Быстрый старт
-    href: quick-start.md
-  - name: Сущности и декораторы
-    href: entity.md
-  - name: Active Record
-    href: active-record.md
-  - name: QueryBuilder
-    href: query-builder.md
-  - name: Связи (relations)
-    href: relations.md
-  - name: Шифрование полей
-    href: encryption.md
-  - name: Schema sync
-    href: schema-sync.md
-  - name: Миграции
-    href: migrations.md
-  - name: Транзакции
-    href: transactions.md
-  - name: Аутентификация
-    href: authentication.md
-  - name: Без NestJS (standalone)
-    href: standalone.md
-  - name: Валидация
-    href: validation.md
-  - name: Справочник API
-    href: api.md
-  - name: Разработка
-    href: development.md
+  - name: ydb-orm
+    items:
+      - name: Обзор
+        href: ydb-orm/index.md
+      - name: Установка
+        href: ydb-orm/installation.md
+      - name: Быстрый старт
+        href: ydb-orm/quick-start.md
+      - name: Сущности и декораторы
+        href: ydb-orm/entity.md
+      - name: Active Record
+        href: ydb-orm/active-record.md
+      - name: QueryBuilder
+        href: ydb-orm/query-builder.md
+      - name: Связи (relations)
+        href: ydb-orm/relations.md
+      - name: Шифрование полей
+        href: ydb-orm/encryption.md
+      - name: Schema sync
+        href: ydb-orm/schema-sync.md
+      - name: Миграции
+        href: ydb-orm/migrations.md
+      - name: Транзакции
+        href: ydb-orm/transactions.md
+      - name: Аутентификация
+        href: ydb-orm/authentication.md
+      - name: Без NestJS (standalone)
+        href: ydb-orm/standalone.md
+      - name: Валидация
+        href: ydb-orm/validation.md
+      - name: Справочник API
+        href: ydb-orm/api.md
+      - name: Разработка
+        href: ydb-orm/development.md

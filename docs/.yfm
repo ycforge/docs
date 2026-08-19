@@ -21,4 +21,4 @@ search:
   confidense: phrased
 
 vars:
-  project-name: ydb-orm
+  project-name: YCForge
