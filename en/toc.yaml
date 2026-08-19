@@ -1,0 +1,39 @@
+title: ydb-orm
+href: index.md
+navigation:
+  header:
+    rightItems:
+      - type: controls
+items:
+  - name: Overview
+    href: index.md
+  - name: Installation
+    href: installation.md
+  - name: Quick start
+    href: quick-start.md
+  - name: Entities & decorators
+    href: entity.md
+  - name: Active Record
+    href: active-record.md
+  - name: QueryBuilder
+    href: query-builder.md
+  - name: Relations
+    href: relations.md
+  - name: Field encryption
+    href: encryption.md
+  - name: Schema sync
+    href: schema-sync.md
+  - name: Migrations
+    href: migrations.md
+  - name: Transactions
+    href: transactions.md
+  - name: Authentication
+    href: authentication.md
+  - name: Standalone usage
+    href: standalone.md
+  - name: Validation
+    href: validation.md
+  - name: API reference
+    href: api.md
+  - name: Development
+    href: development.md

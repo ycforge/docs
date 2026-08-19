@@ -1,0 +1,17 @@
+{
+  "name": "ydb-orm-docs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Статичный сайт документации по @ycforge/ydb-orm (Diplodoc, ru/en)",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "yfm build -i . -o ./dist",
+    "build:production": "yfm build -i . -o ./dist --build-manifest --add-alternate-meta",
+    "dev": "yfm build -i . -o ./dist --watch",
+    "serve": "yfm build -i . -o ./dist && npx serve dist"
+  },
+  "devDependencies": {
+    "@diplodoc/cli": "5.39.0"
+  }
+}

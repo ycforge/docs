@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.yfm/_cache/
+.DS_Store
+*.log

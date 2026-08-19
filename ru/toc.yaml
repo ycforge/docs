@@ -1,0 +1,39 @@
+title: ydb-orm
+href: index.md
+navigation:
+  header:
+    rightItems:
+      - type: controls
+items:
+  - name: Обзор
+    href: index.md
+  - name: Установка
+    href: installation.md
+  - name: Быстрый старт
+    href: quick-start.md
+  - name: Сущности и декораторы
+    href: entity.md
+  - name: Active Record
+    href: active-record.md
+  - name: QueryBuilder
+    href: query-builder.md
+  - name: Связи (relations)
+    href: relations.md
+  - name: Шифрование полей
+    href: encryption.md
+  - name: Schema sync
+    href: schema-sync.md
+  - name: Миграции
+    href: migrations.md
+  - name: Транзакции
+    href: transactions.md
+  - name: Аутентификация
+    href: authentication.md
+  - name: Без NestJS (standalone)
+    href: standalone.md
+  - name: Валидация
+    href: validation.md
+  - name: Справочник API
+    href: api.md
+  - name: Разработка
+    href: development.md
