@@ -20,16 +20,28 @@ docs-site/
 ├── AGENTS.md            # этот файл
 ├── package.json         # скрипты и devDependencies
 ├── .gitignore
-├── .yfm                 # конфиг Diplodoc (build, i18n, vars)
-├── en/                  # английская версия документации
-│   ├── toc.yaml
-│   └── index.md         # и разделы *.md
-└── ru/                  # русская версия документации
-    ├── toc.yaml
-    └── index.md         # и разделы *.md
+├── .github/
+│   └── workflows/       # GitHub Actions: сборка + деплой на GitHub Pages
+├── docs/                # входная директория сборки (не содержит .git!)
+│   ├── .yfm             # конфиг Diplodoc (build, i18n, vars)
+│   ├── presets.yaml
+│   ├── logo.png         # логотип (ycforge) в шапке — navigation.logo в toc.yaml
+│   ├── en/              # английская версия документации
+│   │   ├── toc.yaml
+│   │   └── index.md     # и разделы *.md
+│   └── ru/              # русская версия документации
+│       ├── toc.yaml
+│       └── index.md     # и разделы *.md
+└── dist/                # результат сборки (не коммитится)
 ```
 
 Каждый языковой каталог — самостоятельный раздел Diplodoc со своим `toc.yaml`. Имена файлов в `en/` и `ru/` должны совпадать (одинаковая структура разделов), различается только содержимое.
+
+{% note warning %}
+
+**Важно:** `yfm build` копирует входную директорию целиком (кроме `node_modules/**`). Если вход `-i .` — в результат попадает `.git/`, и повторные сборки падают с `EACCES` на read-only объектах git. Поэтому вход сборки — **`./docs`**, а `.git`/`node_modules`/`dist` остаются на уровне репозитория вне входа.
+
+{% endnote %}
 
 ## Команды
 
@@ -43,8 +55,14 @@ yarn build:production # сборка + проверка ссылок
 Сборка выполняется через `@diplodoc/cli`:
 
 ```bash
-yarn yfm build -i . -o ./dist
+yarn yfm build -i ./docs -o ./dist
 ```
+
+## Деплой (GitHub Pages + CD)
+
+- Репозиторий: `github.com/ycforge/ydb-orm-docs`, ветка `main`.
+- CD: `.github/workflows/pages.yml` — при пуше в `main` собирает сайт и публикует на `https://ycforge.github.io/ydb-orm-docs/`.
+- Пуш — по SSH (`git@github.com:ycforge/ydb-orm-docs.git`): у OAuth-токена нет scope `workflow`, поэтому файлы `.github/workflows/` пушатся только по SSH.
 
 ## Стиль и соглашения
 

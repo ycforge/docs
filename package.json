@@ -6,10 +6,10 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "yfm build -i . -o ./dist --ignore ./.git ./node_modules ./dist ./.yfm",
-    "build:production": "yfm build -i . -o ./dist --ignore ./.git ./node_modules ./dist ./.yfm --build-manifest --add-alternate-meta",
-    "dev": "yfm build -i . -o ./dist --watch --ignore ./.git ./node_modules ./dist ./.yfm",
-    "serve": "yfm build -i . -o ./dist --ignore ./.git ./node_modules ./dist ./.yfm && npx serve dist"
+    "build": "yfm build -i ./docs -o ./dist",
+    "build:production": "yfm build -i ./docs -o ./dist --build-manifest --add-alternate-meta",
+    "dev": "yfm build -i ./docs -o ./dist --watch",
+    "serve": "yfm build -i ./docs -o ./dist && npx serve dist"
   },
   "devDependencies": {
     "@diplodoc/cli": "5.39.0"
