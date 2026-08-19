@@ -1,7 +1,11 @@
 title: ydb-orm
 href: index.md
 navigation:
+  logo:
+    icon: logo.png
+    text: ydb-orm
   header:
+    iconSize: 28
     rightItems:
       - type: controls
 items:
