@@ -29,6 +29,18 @@ items:
         href: ydb-orm/relations.md
       - name: Field encryption
         href: ydb-orm/encryption.md
+      - name: Crypto providers
+        items:
+          - name: Encryption
+            items:
+              - name: Yandex Cloud KMS
+                href: ydb-orm/crypto-providers/encryption/yandex-kms.md
+              - name: Custom AES provider
+                href: ydb-orm/crypto-providers/encryption/custom-aes.md
+          - name: Blind index
+            items:
+              - name: HMAC-SHA256 (hmac-bi)
+                href: ydb-orm/crypto-providers/blind-index/hmac-bi.md
       - name: Schema sync
         href: ydb-orm/schema-sync.md
       - name: Migrations

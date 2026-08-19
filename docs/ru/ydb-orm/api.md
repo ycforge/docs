@@ -26,14 +26,12 @@
 | `EagerLoad([...])` | класс | eager-загрузка relations без N+1 |
 | `YdbIndex(options)` | класс | вторичный индекс (GLOBAL SYNC) |
 | `YdbEnum(options)` | свойство | enum-колонка (`Utf8`/`Int32`) |
-| `YdbJson()` | свойство | JSON-колонка (сериализация в Utf8) |
 | `YdbCreateDateColumn()` | свойство | автопроставление даты создания |
 | `YdbUpdateDateColumn()` | свойство | автопроставление даты обновления |
 | `YdbTtl(options)` | класс | TTL таблицы (один раз на класс) |
 | `BeforeInsert` / `AfterInsert` | метод | lifecycle-хуки вставки |
 | `BeforeUpdate` | метод | lifecycle-хук обновления |
 | `AfterFind` | метод | lifecycle-хук чтения |
-| `BeforeRemove` | метод | lifecycle-хук удаления |
 
 ## Active Record (статические методы `YdbBaseEntity`)
 

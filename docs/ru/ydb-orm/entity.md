@@ -193,26 +193,6 @@ export class SessionEntity extends YdbBaseEntity {
 }
 ```
 
-## @YdbJson()
-
-Декоратор свойства: колонка хранится как JSON-строка (`Utf8` в БД), автоматически сериализуется/десериализуется при записи/чтении.
-
-```ts
-@YdbEntity('users')
-export class UserEntity extends YdbBaseEntity {
-  @YdbPrimaryColumn('Uuid')
-  uuid: string;
-
-  @YdbJson()
-  metadata: { role: string; settings: Record<string, any> };
-}
-
-const user = new UserEntity();
-user.metadata = { role: 'admin', settings: { theme: 'dark' } };
-await UserEntity.save(user);
-// В БД: '{"role":"admin","settings":{"theme":"dark"}}'
-```
-
 ## @YdbCreateDateColumn() / @YdbUpdateDateColumn()
 
 Автоматически проставляют метки времени при вставке и обновлении.
@@ -255,9 +235,17 @@ export class SessionEntity extends YdbBaseEntity {
 
 ## Lifecycle-хуки
 
-Метод-декораторы: `@BeforeInsert`, `@AfterInsert`, `@BeforeUpdate`, `@AfterFind`, `@BeforeRemove`. Хуки вызываются последовательно и ожидаются (`await`).
+Метод-декораторы: `@BeforeInsert`, `@AfterInsert`, `@BeforeUpdate`, `@AfterFind`. Хуки вызываются последовательно и ожидаются (`await`).
 
 ```ts
+import {
+  YdbBaseEntity,
+  YdbEntity,
+  YdbPrimaryColumn,
+  BeforeInsert,
+  AfterFind,
+} from '@ycforge/ydb-orm';
+
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {
   @YdbPrimaryColumn('Uuid')
@@ -277,7 +265,7 @@ export class UserEntity extends YdbBaseEntity {
 
 {% note warning %}
 
-Хуки `@BeforeUpdate` и `@BeforeRemove` работают на инстансе, поэтому `updateBy` / `deleteBy` (массовые операции) их не вызывают.
+Хуки `@BeforeUpdate` работает на инстансе, поэтому `updateBy` (массовая операция) его не вызывает.
 
 {% endnote %}
 

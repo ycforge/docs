@@ -193,26 +193,6 @@ export class SessionEntity extends YdbBaseEntity {
 }
 ```
 
-## @YdbJson()
-
-Property decorator: the column is stored as a JSON string (`Utf8` in the DB), automatically serialized/deserialized on write/read.
-
-```ts
-@YdbEntity('users')
-export class UserEntity extends YdbBaseEntity {
-  @YdbPrimaryColumn('Uuid')
-  uuid: string;
-
-  @YdbJson()
-  metadata: { role: string; settings: Record<string, any> };
-}
-
-const user = new UserEntity();
-user.metadata = { role: 'admin', settings: { theme: 'dark' } };
-await UserEntity.save(user);
-// In DB: '{"role":"admin","settings":{"theme":"dark"}}'
-```
-
 ## @YdbCreateDateColumn() / @YdbUpdateDateColumn()
 
 Automatically populate timestamps on insert and update.
@@ -255,9 +235,17 @@ export class SessionEntity extends YdbBaseEntity {
 
 ## Lifecycle hooks
 
-Method decorators: `@BeforeInsert`, `@AfterInsert`, `@BeforeUpdate`, `@AfterFind`, `@BeforeRemove`. Hooks run sequentially and are awaited.
+Method decorators: `@BeforeInsert`, `@AfterInsert`, `@BeforeUpdate`, `@AfterFind`. Hooks run sequentially and are awaited.
 
 ```ts
+import {
+  YdbBaseEntity,
+  YdbEntity,
+  YdbPrimaryColumn,
+  BeforeInsert,
+  AfterFind,
+} from '@ycforge/ydb-orm';
+
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {
   @YdbPrimaryColumn('Uuid')
@@ -277,7 +265,7 @@ export class UserEntity extends YdbBaseEntity {
 
 {% note warning %}
 
-`@BeforeUpdate` and `@BeforeRemove` hooks work on an instance, so `updateBy` / `deleteBy` (bulk operations) do not trigger them.
+`@BeforeUpdate` works on an instance, so `updateBy` (bulk operation) does not trigger it.
 
 {% endnote %}
 

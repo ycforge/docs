@@ -39,10 +39,16 @@ ydb-orm migration:generate AddPhotos      # migration by entity↔DB diff
 ydb-orm migration:run                     # apply all new migrations
 ydb-orm migration:revert                  # revert the last one
 ydb-orm migration:show                    # migration status
+ydb-orm migration:check                   # check that all migrations are applied
+ydb-orm schema:verify                     # verify DB schema against entity metadata
 ydb-orm entity:create UserProfile         # entity ./src/user-profile.entity.ts
 ```
 
-Options: `--dir <path>` (migrations directory, default `./migrations`; for `entity:create` — `./src`), `--config <path>`.
+Options:
+
+- `--dir <path>` — migrations directory (default `./migrations`; for `entity:create` — `./src`).
+- `--config <path>` — path to config.
+- `--json` — machine-readable output for `migration:show` and `migration:check`.
 
 ## CLI config
 

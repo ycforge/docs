@@ -26,14 +26,12 @@
 | `EagerLoad([...])` | class | eager-load relations without N+1 |
 | `YdbIndex(options)` | class | secondary index (GLOBAL SYNC) |
 | `YdbEnum(options)` | property | enum column (`Utf8`/`Int32`) |
-| `YdbJson()` | property | JSON column (serialized into Utf8) |
 | `YdbCreateDateColumn()` | property | auto-fill creation date |
 | `YdbUpdateDateColumn()` | property | auto-fill update date |
 | `YdbTtl(options)` | class | table TTL (once per class) |
 | `BeforeInsert` / `AfterInsert` | method | insert lifecycle hooks |
 | `BeforeUpdate` | method | update lifecycle hook |
 | `AfterFind` | method | find lifecycle hook |
-| `BeforeRemove` | method | remove lifecycle hook |
 
 ## Active Record (static methods of `YdbBaseEntity`)
 

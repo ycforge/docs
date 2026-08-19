@@ -39,10 +39,16 @@ ydb-orm migration:generate AddPhotos      # миграция по diff сущн�
 ydb-orm migration:run                     # применить все новые миграции
 ydb-orm migration:revert                  # откатить последнюю
 ydb-orm migration:show                    # статус миграций
+ydb-orm migration:check                   # проверить, что все миграции применены
+ydb-orm schema:verify                     # проверить схему БД против метаданных сущностей
 ydb-orm entity:create UserProfile         # сущность ./src/user-profile.entity.ts
 ```
 
-Опции: `--dir <path>` (директория миграций, по умолчанию `./migrations`; для `entity:create` — `./src`), `--config <path>`.
+Опции:
+
+- `--dir <path>` — директория миграций (по умолчанию `./migrations`; для `entity:create` — `./src`).
+- `--config <path>` — путь к конфигу.
+- `--json` — machine-readable вывод для `migration:show` и `migration:check`.
 
 ## Конфиг CLI
 
