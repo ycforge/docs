@@ -29,6 +29,8 @@ const photos = await PhotoEntity.query()
 | `execute()` | алиас `getMany()` |
 | `getOne()` | первая запись или `null` |
 | `getCount()` | `COUNT(*)` по тем же условиям (без limit/offset/order) |
+| `andWhereJsonExists(column, path)` | условие `JSON_EXISTS(column, path)` |
+| `andWhereJsonValue(column, path, value)` | условие `JSON_VALUE(column, path) = value` (сравнение как строка) |
 | `toYql()` | собрать SQL и значения параметров **без** выполнения |
 
 ## Примеры
@@ -70,6 +72,15 @@ console.log(values); // { is_public: true }
 
 ```ts
 const count = await PhotoEntity.query().where({ is_public: true }).getCount();
+```
+
+### JSON-условия
+
+```ts
+const events = await EventEntity.query()
+  .andWhereJsonExists('metadata', '$.settings.theme')
+  .andWhereJsonValue('metadata', '$.role', 'admin')
+  .getMany();
 ```
 
 ### Внутри транзакции

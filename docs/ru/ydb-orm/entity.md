@@ -19,6 +19,8 @@
 | `Date` | дата |
 | `Datetime` | дата и время |
 | `Timestamp` | метка времени |
+| `Json` | нативный JSON (YDB) |
+| `JsonDocument` | нативный JSON-документ (YDB) |
 
 ## @YdbEntity('table_name')
 
@@ -49,6 +51,25 @@ export class PostEntity extends YdbBaseEntity {
 
   @YdbColumn('Bool')
   isPublic: boolean;
+}
+```
+
+## @YdbJson()
+
+Декоратор свойства: поле хранится как JSON-строка в колонке `Utf8`, но ORM автоматически сериализует (`JSON.stringify`) и парсит (`JSON.parse`) значение. Альтернативы — нативные типы `@YdbColumn('Json')` и `@YdbColumn('JsonDocument')`.
+
+```ts
+@YdbEntity('events')
+export class EventEntity extends YdbBaseEntity {
+  @YdbPrimaryColumn('Uuid')
+  uuid: string;
+
+  @YdbJson()
+  @YdbColumn('Utf8')
+  metadata: Record<string, any>;
+
+  @YdbColumn('Json')
+  payload: any;
 }
 ```
 
