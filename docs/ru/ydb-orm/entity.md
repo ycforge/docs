@@ -73,13 +73,14 @@ export class UserRoleEntity extends YdbBaseEntity {
 
 {% endnote %}
 
-## @YdbEncrypted({ blindIndex })
+## @YdbEncrypted({ blindIndex, lazy })
 
 Помечает поле как шифруемое. Значение шифруется перед записью и расшифровывается после чтения.
 
 - `blindIndex: true` (по умолчанию) — добавляет synthetic-колонку `{field}_bi` для поиска по хешу значения.
 - `blindIndex: false` — хранится только ciphertext, поиск по полю невозможен.
 - `aadOverride` — строка, которая будет использоваться как AAD вместо полей `@YdbSecurityAAD` (нужна при массовых операциях `updateBy`).
+- `lazy: true` — ленивая дешифровка: поле не дешифруется при чтении из БД, в инстансе остаётся ciphertext. Plaintext возвращают `await entity.decryptField('field')` или `await entity.decryptLazyFields()`. `toJSON()` / `JSON.stringify()` бросают ошибку, пока lazy-поля не дешифрованы. Экономит CPU на запросах, где значение не нужно.
 
 Шифротекст хранится в колонке `Bytes` (raw bytes). Тип из `@YdbColumn` для таких полей игнорируется, объявлять его не нужно.
 
@@ -193,26 +194,6 @@ export class SessionEntity extends YdbBaseEntity {
 }
 ```
 
-## @YdbJson()
-
-Декоратор свойства: колонка хранится как JSON-строка (`Utf8` в БД), автоматически сериализуется/десериализуется при записи/чтении.
-
-```ts
-@YdbEntity('users')
-export class UserEntity extends YdbBaseEntity {
-  @YdbPrimaryColumn('Uuid')
-  uuid: string;
-
-  @YdbJson()
-  metadata: { role: string; settings: Record<string, any> };
-}
-
-const user = new UserEntity();
-user.metadata = { role: 'admin', settings: { theme: 'dark' } };
-await UserEntity.save(user);
-// В БД: '{"role":"admin","settings":{"theme":"dark"}}'
-```
-
 ## @YdbCreateDateColumn() / @YdbUpdateDateColumn()
 
 Автоматически проставляют метки времени при вставке и обновлении.
@@ -258,6 +239,15 @@ export class SessionEntity extends YdbBaseEntity {
 Метод-декораторы: `@BeforeInsert`, `@AfterInsert`, `@BeforeUpdate`, `@AfterFind`, `@BeforeRemove`. Хуки вызываются последовательно и ожидаются (`await`).
 
 ```ts
+import {
+  YdbBaseEntity,
+  YdbEntity,
+  YdbPrimaryColumn,
+  BeforeInsert,
+  AfterFind,
+  BeforeRemove,
+} from '@ycforge/ydb-orm';
+
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {
   @YdbPrimaryColumn('Uuid')
@@ -272,12 +262,17 @@ export class UserEntity extends YdbBaseEntity {
   normalize() {
     this.name = this.name.trim();
   }
+
+  @BeforeRemove()
+  cleanup() {
+    // вызывается перед удалением по PK
+  }
 }
 ```
 
 {% note warning %}
 
-Хуки `@BeforeUpdate` и `@BeforeRemove` работают на инстансе, поэтому `updateBy` / `deleteBy` (массовые операции) их не вызывают.
+Хуки `@BeforeUpdate` и `@BeforeRemove` работают на инстансе, поэтому массовые операции `updateBy` / `deleteBy` их не вызывают.
 
 {% endnote %}
 

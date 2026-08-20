@@ -73,13 +73,14 @@ If no primary key is declared, the `uuid` column (Uuid) is used by default. It i
 
 {% endnote %}
 
-## @YdbEncrypted({ blindIndex })
+## @YdbEncrypted({ blindIndex, lazy })
 
 Marks a field as encrypted. The value is encrypted before writing and decrypted after reading.
 
 - `blindIndex: true` (default) — adds a synthetic `{field}_bi` column for searching by value hash.
 - `blindIndex: false` — stores only ciphertext; searching by the field is impossible.
 - `aadOverride` — a string used as AAD instead of the `@YdbSecurityAAD` fields (needed for bulk `updateBy` operations).
+- `lazy: true` — lazy decryption: the field is not decrypted when reading from the DB, the instance keeps the ciphertext. Plaintext is returned by `await entity.decryptField('field')` or `await entity.decryptLazyFields()`. `toJSON()` / `JSON.stringify()` throw until lazy fields are decrypted. Saves CPU on queries where the value is not needed.
 
 Ciphertext is stored in a `Bytes` column (raw bytes). The type from `@YdbColumn` is ignored for such fields, so there is no need to declare it.
 
@@ -193,26 +194,6 @@ export class SessionEntity extends YdbBaseEntity {
 }
 ```
 
-## @YdbJson()
-
-Property decorator: the column is stored as a JSON string (`Utf8` in the DB), automatically serialized/deserialized on write/read.
-
-```ts
-@YdbEntity('users')
-export class UserEntity extends YdbBaseEntity {
-  @YdbPrimaryColumn('Uuid')
-  uuid: string;
-
-  @YdbJson()
-  metadata: { role: string; settings: Record<string, any> };
-}
-
-const user = new UserEntity();
-user.metadata = { role: 'admin', settings: { theme: 'dark' } };
-await UserEntity.save(user);
-// In DB: '{"role":"admin","settings":{"theme":"dark"}}'
-```
-
 ## @YdbCreateDateColumn() / @YdbUpdateDateColumn()
 
 Automatically populate timestamps on insert and update.
@@ -258,6 +239,15 @@ export class SessionEntity extends YdbBaseEntity {
 Method decorators: `@BeforeInsert`, `@AfterInsert`, `@BeforeUpdate`, `@AfterFind`, `@BeforeRemove`. Hooks run sequentially and are awaited.
 
 ```ts
+import {
+  YdbBaseEntity,
+  YdbEntity,
+  YdbPrimaryColumn,
+  BeforeInsert,
+  AfterFind,
+  BeforeRemove,
+} from '@ycforge/ydb-orm';
+
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {
   @YdbPrimaryColumn('Uuid')
@@ -272,12 +262,17 @@ export class UserEntity extends YdbBaseEntity {
   normalize() {
     this.name = this.name.trim();
   }
+
+  @BeforeRemove()
+  cleanup() {
+    // called before PK-based deletion
+  }
 }
 ```
 
 {% note warning %}
 
-`@BeforeUpdate` and `@BeforeRemove` hooks work on an instance, so `updateBy` / `deleteBy` (bulk operations) do not trigger them.
+`@BeforeUpdate` and `@BeforeRemove` work on an instance, so bulk operations `updateBy` / `deleteBy` do not trigger them.
 
 {% endnote %}
 

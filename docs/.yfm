@@ -1,6 +1,6 @@
 allowHtml: true
-lang: en
-langs: ['en', 'ru']
+lang: ru
+langs: ['ru', 'en']
 
 pdf:
   enabled: true

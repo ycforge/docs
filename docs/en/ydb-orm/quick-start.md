@@ -118,33 +118,39 @@ export class UsersService {
 }
 ```
 
-## 5. Use a repository
+## 5. Use a repository with DI
 
-For larger apps, wrap entity operations in an `@Injectable()` repository class and inject it where needed. The repository simply calls the entity's static (Active Record) methods.
+`YdbModule.forFeature([...])` automatically registers a `YdbRepository<Entity>`. Inject it with `@InjectRepository()` in your services so you don't need to call the entity's global static methods.
 
 ```ts
 import { Injectable } from '@nestjs/common';
+import { InjectRepository, YdbRepository } from '@ycforge/ydb-orm';
 import { UserEntity } from './user.entity';
 
 @Injectable()
-export class UsersRepository {
+export class UsersService {
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly users: YdbRepository<UserEntity>,
+  ) {}
+
   async create(name: string, email: string) {
     const user = new UserEntity();
     user.name = name;
     user.email = email;
-    return UserEntity.save(user);
+    return this.users.save(user);
   }
 
   findByUuid(uuid: string) {
-    return UserEntity.find({ uuid });
+    return this.users.findOneBy({ uuid });
   }
 
   findAll(limit: number, offset: number) {
-    return UserEntity.findAll({}, { limit, offset });
+    return this.users.findAll({}, { limit, offset });
   }
 
   async remove(uuid: string) {
-    await UserEntity.delete(uuid);
+    await this.users.delete(uuid);
   }
 }
 ```
@@ -153,11 +159,11 @@ Expose it through a controller:
 
 ```ts
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { UsersRepository } from './users.repository';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly users: UsersRepository) {}
+  constructor(private readonly users: UsersService) {}
 
   @Post()
   create(@Body() body: { name: string; email: string }) {
@@ -171,12 +177,12 @@ export class UsersController {
 }
 ```
 
-Register the repository and the controller in the `UserModule` from step 3 — its `imports` stay unchanged:
+Register the service and the controller in the `UserModule` from step 3 — its `imports` stay unchanged:
 
 ```ts
 @Module({
   // ...imports: [YdbModule.forFeature([UserEntity])] — as in step 3
-  providers: [UsersRepository],
+  providers: [UsersService],
   controllers: [UsersController],
 })
 export class UserModule {}
@@ -184,7 +190,7 @@ export class UserModule {}
 
 {% note info %}
 
-The repository pattern is optional — you can call `UserEntity` static methods from anywhere directly (see [Active Record](active-record.md)). The repository just keeps the data-access logic in one place.
+The repository pattern is optional — you can call `UserEntity` static methods from anywhere directly (see [Active Record](active-record.md)). `YdbRepository` keeps data-access logic in one place and is easier to mock in tests. See the [Repository](repository.md) section for the full list of repository methods.
 
 {% endnote %}
 

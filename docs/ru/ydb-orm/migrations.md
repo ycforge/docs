@@ -39,10 +39,30 @@ ydb-orm migration:generate AddPhotos      # миграция по diff сущн�
 ydb-orm migration:run                     # применить все новые миграции
 ydb-orm migration:revert                  # откатить последнюю
 ydb-orm migration:show                    # статус миграций
+ydb-orm migration:check                   # проверить, что все миграции применены
+ydb-orm schema:verify                     # проверить схему БД против метаданных сущностей
 ydb-orm entity:create UserProfile         # сущность ./src/user-profile.entity.ts
+ydb-orm completion bash                   # скрипт shell-автодополнения (bash|zsh|fish)
 ```
 
-Опции: `--dir <path>` (директория миграций, по умолчанию `./migrations`; для `entity:create` — `./src`), `--config <path>`.
+Опции:
+
+- `--dir <path>` — директория миграций (по умолчанию `./migrations`; для `entity:create` — `./src`).
+- `--config <path>` — путь к конфигу.
+- `--json` — machine-readable вывод для `migration:show` и `migration:check`.
+
+`migration:generate` и `schema:verify` выводят цветной diff расхождений «сущности vs БД», сгруппированный по таблицам. Цвета отключаются при выводе не в TTY или через переменную `NO_COLOR`.
+
+## Shell-автодополнение
+
+```bash
+# bash
+ydb-orm completion bash | sudo tee /etc/bash_completion.d/ydb-orm
+# zsh
+ydb-orm completion zsh > ~/.zsh/completions/_ydb-orm
+# fish
+ydb-orm completion fish > ~/.config/fish/completions/ydb-orm.fish
+```
 
 ## Конфиг CLI
 

@@ -22,17 +22,20 @@ yarn format        # prettier --write
 
 ## Source structure
 
-- `src/core/` — types, option interfaces, DI tokens, TS→YDB mapper, SQL utilities.
+- `src/core/` — types, option interfaces, DI tokens, TS→YDB mapper, SQL utilities, option validation.
 - `src/decorators/` — all entity decorators.
-- `src/entity/` — `YdbBaseEntity` (Active Record) and runtime dependencies.
+- `src/entity/` — `YdbBaseEntity` (Active Record facade) and runtime dependencies.
+- `src/persistence/` — `YdbEntityPersistence`: CRUD, encryption, lifecycle hooks.
+- `src/relations/` — `YdbEntityRelations`: eager/lazy relations, many-to-many.
+- `src/repository/` — `YdbRepository`, `YdbEntityManager`, `InjectRepository`.
 - `src/encryption/` — encryption provider interfaces.
-- `src/metadata/` — metadata collection from Reflect, global entity registry.
+- `src/metadata/` — metadata collection from Reflect, global entity registry, validation.
 - `src/module/` — NestJS integration (`YdbCoreModule`, `YdbModule`, repository-factory).
 - `src/schema/` — schema sync and DDL generators.
 - `src/transaction/` — `YdbTransactionManager`.
 - `src/credentials/` — credentials provider for auth_key.
 - `src/migrations/` — migration runner, loader, generator.
-- `src/cli/` — the `ydb-orm` binary.
+- `src/cli/` — the `ydb-orm` binary (completion, diff, migrations).
 - `examples/` — usage examples (01-basic-crud, 02-relations, 03-encryption, 04-schema-sync).
 
 ## Tests

@@ -118,33 +118,39 @@ export class UsersService {
 }
 ```
 
-## 5. Используйте репозиторий
+## 5. Используйте репозиторий через DI
 
-В крупных приложениях операции с сущностью удобно обернуть в `@Injectable()`-класс-репозиторий и инжектировать его туда, где он нужен. Репозиторий просто вызывает статические (Active Record) методы сущности.
+`YdbModule.forFeature([...])` автоматически регистрирует `YdbRepository<Entity>`. Внедряйте его через `@InjectRepository()` в сервисы — так не приходится обращаться к глобальным статическим методам сущности.
 
 ```ts
 import { Injectable } from '@nestjs/common';
+import { InjectRepository, YdbRepository } from '@ycforge/ydb-orm';
 import { UserEntity } from './user.entity';
 
 @Injectable()
-export class UsersRepository {
+export class UsersService {
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly users: YdbRepository<UserEntity>,
+  ) {}
+
   async create(name: string, email: string) {
     const user = new UserEntity();
     user.name = name;
     user.email = email;
-    return UserEntity.save(user);
+    return this.users.save(user);
   }
 
   findByUuid(uuid: string) {
-    return UserEntity.find({ uuid });
+    return this.users.findOneBy({ uuid });
   }
 
   findAll(limit: number, offset: number) {
-    return UserEntity.findAll({}, { limit, offset });
+    return this.users.findAll({}, { limit, offset });
   }
 
   async remove(uuid: string) {
-    await UserEntity.delete(uuid);
+    await this.users.delete(uuid);
   }
 }
 ```
@@ -153,11 +159,11 @@ export class UsersRepository {
 
 ```ts
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { UsersRepository } from './users.repository';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly users: UsersRepository) {}
+  constructor(private readonly users: UsersService) {}
 
   @Post()
   create(@Body() body: { name: string; email: string }) {
@@ -171,12 +177,12 @@ export class UsersController {
 }
 ```
 
-Зарегистрируйте репозиторий и контроллер в `UserModule` из шага 3 — его `imports` остаются без изменений:
+Зарегистрируйте сервис и контроллер в `UserModule` из шага 3 — его `imports` остаются без изменений:
 
 ```ts
 @Module({
   // ...imports: [YdbModule.forFeature([UserEntity])] — как в шаге 3
-  providers: [UsersRepository],
+  providers: [UsersService],
   controllers: [UsersController],
 })
 export class UserModule {}
@@ -184,7 +190,7 @@ export class UserModule {}
 
 {% note info %}
 
-Репозиторий — необязательный паттерн: статические методы `UserEntity` можно вызывать из любого места напрямую (см. [Active Record](active-record.md)). Репозиторий просто собирает логику доступа к данным в одном месте.
+Репозиторий — необязательный паттерн: статические методы `UserEntity` можно вызывать из любого места напрямую (см. [Active Record](active-record.md)). `YdbRepository` собирает логику доступа к данным в одном месте и проще мокать в тестах. Подробнее о методах репозитория читайте в разделе [Репозиторий](repository.md).
 
 {% endnote %}
 
