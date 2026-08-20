@@ -29,6 +29,8 @@ const photos = await PhotoEntity.query()
 | `execute()` | alias of `getMany()` |
 | `getOne()` | first record or `null` |
 | `getCount()` | `COUNT(*)` with the same conditions (no limit/offset/order) |
+| `andWhereJsonExists(column, path)` | `JSON_EXISTS(column, path)` condition |
+| `andWhereJsonValue(column, path, value)` | `JSON_VALUE(column, path) = value` condition (string comparison) |
 | `toYql()` | build SQL and parameter values **without** executing |
 
 ## Examples
@@ -70,6 +72,15 @@ console.log(values); // { is_public: true }
 
 ```ts
 const count = await PhotoEntity.query().where({ is_public: true }).getCount();
+```
+
+### JSON conditions
+
+```ts
+const events = await EventEntity.query()
+  .andWhereJsonExists('metadata', '$.settings.theme')
+  .andWhereJsonValue('metadata', '$.role', 'admin')
+  .getMany();
 ```
 
 ### Inside a transaction

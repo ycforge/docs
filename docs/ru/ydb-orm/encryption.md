@@ -134,24 +134,35 @@ await UserEntity.find({ government_id: '1234567890' });
 
 ## AAD (Additional Authenticated Data)
 
-Поля, помеченные `@YdbSecurityAAD()`, включаются в AAD при шифровании других полей. Если такое поле изменится, существующие ciphertext'ы перестанут расшифровываться — защита от подмены связанных данных.
+Поля, помеченные `@YdbSecurityAAD()`, включаются в AAD при шифровании других полей. Декоратор может применяться только к колонкам первичного ключа. Если значение такого поля изменится, существующие ciphertext'ы перестанут расшифровываться — защита от подмены связанных данных.
 
 ```ts
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {
+  @YdbSecurityAAD()
   @YdbPrimaryColumn('Uuid')
   uuid: string;
-
-  @YdbSecurityAAD()
-  @YdbColumn('Utf8')
-  organization: string;
 
   @YdbEncrypted()
   email: string;
 }
 ```
 
-AAD-строка строится из полей в лексикографическом порядке: `organization=acme;...`. Для массового `updateBy` по зашифрованному полю нужен явный `aadOverride`, иначе ORM бросит ошибку — AAD нельзя пересобрать без полной строки.
+AAD-строка строится из полей в лексикографическом порядке: `uuid=<value>;...`.
+
+### Обновление зашифрованных полей через `updateBy`
+
+Если зашифрованное поле обновляется через `updateBy`, ORM собирает AAD из AAD-полей, зафиксированных в `where`. Благодаря тому что AAD-поля — часть PK, однозначный контекст получается, когда все они заданы в условии:
+
+```ts
+// OK: AAD-поле uuid зафиксировано в where
+await UserEntity.updateBy({ uuid: user.uuid }, { email: 'new@example.com' });
+
+// Ошибка: предикат не фиксирует AAD-поле(я)
+await UserEntity.updateBy({ name: 'Иван' }, { email: 'new@example.com' });
+```
+
+Для явного переопределения AAD используйте `aadOverride` в опциях `@YdbEncrypted({ aadOverride: '...' })`.
 
 ## Особенности
 

@@ -134,24 +134,35 @@ await UserEntity.find({ government_id: '1234567890' });
 
 ## AAD (Additional Authenticated Data)
 
-Fields marked with `@YdbSecurityAAD()` are included in the AAD when encrypting other fields. If such a field changes, existing ciphertexts stop decrypting — protection against tampering with related data.
+Fields marked with `@YdbSecurityAAD()` are included in the AAD when encrypting other fields. This decorator may only be applied to primary-key columns. If such a field changes, existing ciphertexts stop decrypting — protection against tampering with related data.
 
 ```ts
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {
+  @YdbSecurityAAD()
   @YdbPrimaryColumn('Uuid')
   uuid: string;
-
-  @YdbSecurityAAD()
-  @YdbColumn('Utf8')
-  organization: string;
 
   @YdbEncrypted()
   email: string;
 }
 ```
 
-The AAD string is built from fields in lexicographic order: `organization=acme;...`. For a bulk `updateBy` on an encrypted field, an explicit `aadOverride` is required, otherwise the ORM raises an error — AAD cannot be reconstructed without the full row.
+The AAD string is built from fields in lexicographic order: `uuid=<value>;...`.
+
+### Updating encrypted fields via `updateBy`
+
+When an encrypted field is updated through `updateBy`, the ORM builds the AAD from the AAD fields fixed by the `where` predicate. Because AAD fields are part of the primary key, a safe context is available whenever all of them are present in the condition:
+
+```ts
+// OK: the AAD field uuid is fixed in where
+await UserEntity.updateBy({ uuid: user.uuid }, { email: 'new@example.com' });
+
+// Error: the predicate does not fix the AAD field(s)
+await UserEntity.updateBy({ name: 'John' }, { email: 'new@example.com' });
+```
+
+To explicitly override AAD, use `aadOverride` in `@YdbEncrypted({ aadOverride: '...' })`.
 
 ## Notes
 

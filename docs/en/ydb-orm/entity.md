@@ -19,6 +19,8 @@ The column type is a YDB primitive string:
 | `Date` | date |
 | `Datetime` | date and time |
 | `Timestamp` | timestamp |
+| `Json` | native JSON (YDB) |
+| `JsonDocument` | native JSON document (YDB) |
 
 ## @YdbEntity('table_name')
 
@@ -49,6 +51,25 @@ export class PostEntity extends YdbBaseEntity {
 
   @YdbColumn('Bool')
   isPublic: boolean;
+}
+```
+
+## @YdbJson()
+
+Property decorator: the field is stored as a JSON string in a `Utf8` column, but the ORM automatically serializes (`JSON.stringify`) and parses (`JSON.parse`) the value. Alternatives are the native types `@YdbColumn('Json')` and `@YdbColumn('JsonDocument')`.
+
+```ts
+@YdbEntity('events')
+export class EventEntity extends YdbBaseEntity {
+  @YdbPrimaryColumn('Uuid')
+  uuid: string;
+
+  @YdbJson()
+  @YdbColumn('Utf8')
+  metadata: Record<string, any>;
+
+  @YdbColumn('Json')
+  payload: any;
 }
 ```
 
