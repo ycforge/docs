@@ -17,8 +17,9 @@ const photos = await PhotoEntity.query()
 
 | Method | Description |
 | --- | --- |
-| `where(criteria)` | equality conditions (AND), merged with previous ones |
+| `where(criteria)` | conditions (AND), merged with previous ones |
 | `andWhere(criteria)` | alias of `where()` for readable chains |
+| `orWhere(criteria)` | merges criteria with previous ones via `OR` |
 | `orderBy(field, dir?)` | ordering (`ASC`/`DESC`), replaces previous |
 | `addOrderBy(field, dir?)` | additional ordering (for composite) |
 | `select(columns)` | specific columns instead of `SELECT *` |
@@ -74,12 +75,71 @@ console.log(values); // { is_public: true }
 const count = await PhotoEntity.query().where({ is_public: true }).getCount();
 ```
 
+### Comparison operators
+
+`where()`/`andWhere()` accept operator objects:
+
+```ts
+const users = await UserEntity.query()
+  .where({ age: { $gte: 18 } })
+  .andWhere({ status: { $in: ['active', 'pending'] } })
+  .andWhere({ name: { $like: 'Ivan%' } })
+  .getMany();
+```
+
+Supported operators:
+
+| Operator | Description |
+| --- | --- |
+| `$eq` | equality (default when using `{ field: value }`) |
+| `$ne` | not equal; `null` becomes `IS NOT NULL` |
+| `$gt`, `$gte`, `$lt`, `$lte` | comparisons |
+| `$like` | `LIKE` (only `Utf8` columns) |
+| `$in` | `IN (...)` |
+| `$between` | `BETWEEN lo AND hi` |
+
+### Logical groups `$or` and `$and`
+
+```ts
+const users = await UserEntity.query()
+  .where({
+    $or: [
+      { balance: { $gte: 100 } },
+      { is_admin: true },
+    ],
+    is_banned: false,
+  })
+  .getMany();
+```
+
+`$and` and `$or` accept an array of nested objects; groups can be nested. `orWhere()` adds a single criterion merged with previous ones via `OR`:
+
+```ts
+const users = await UserEntity.query()
+  .where({ is_active: true })
+  .orWhere({ role: 'admin' })
+  .getMany();
+```
+
 ### JSON conditions
 
 ```ts
 const events = await EventEntity.query()
   .andWhereJsonExists('metadata', '$.settings.theme')
   .andWhereJsonValue('metadata', '$.role', 'admin')
+  .getMany();
+```
+
+The same JSON checks can be written with object operators:
+
+```ts
+const events = await EventEntity.query()
+  .where({
+    metadata: { $jsonExists: '$.settings.theme' },
+  })
+  .andWhere({
+    payload: { $jsonValue: { path: '$.role', equals: 'admin' } },
+  })
   .getMany();
 ```
 
@@ -96,6 +156,6 @@ await this.trxManager.runInTransaction(async (trx) => {
 
 ## Limitations
 
-- Conditions support equality only (`=`), joined with `AND`. A repeated field in `andWhere` overwrites the previous value.
+- Conditions at the same level are joined with `AND`. A repeated field in `andWhere` overwrites the previous value.
 - Fields in `WHERE` and `ORDER BY` are validated against the entity metadata — an unknown field raises an error.
-- Encrypted fields with blind index are supported just like in `find`/`findAll`.
+- Encrypted fields with blind index are supported just like in `find`/`findAll`: only equality (`$eq` / raw value) is allowed; other operators on an encrypted field raise an error.
