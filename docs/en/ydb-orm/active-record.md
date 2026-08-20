@@ -68,8 +68,14 @@ await UserEntity.insertMany(users);
 
 Deletes a record by primary key. Returns the deleted record (`RETURNING *`) or `null` if not found.
 
+For a composite PK, pass an object with all key components:
+
 ```ts
+// Single PK
 const deleted = await UserEntity.delete('5ad91505-d4f6-4a81-ab65-9dbc68cf4ed5');
+
+// Composite PK
+const deleted = await UserEntity.delete({ user_uuid: '...', role: 'admin' });
 ```
 
 ### updateBy(where, patch, options?)
@@ -138,6 +144,31 @@ const user = await UserEntity.find({ email: 'john@example.com' });
 
 Searching by an encrypted field **without** blind index is an error. See [Field encryption](encryption.md).
 
+## Lazy decryption
+
+If a field is marked with `@YdbEncrypted({ lazy: true })`, reading from the DB stores the ciphertext in the instance, not the plaintext. This saves CPU when the value is not needed.
+
+```ts
+@YdbEntity('users')
+export class UserEntity extends YdbBaseEntity {
+  @YdbEncrypted({ lazy: true })
+  largeSecret: string;
+}
+
+const user = await UserEntity.find({ uuid });
+// user.largeSecret is still ciphertext
+
+const plaintext = await user.decryptField('largeSecret');
+// or decrypt all lazy fields at once:
+await user.decryptLazyFields();
+```
+
+{% note warning %}
+
+`toJSON()` and `JSON.stringify(entity)` throw if the instance has undecrypted lazy fields. Call `await entity.decryptLazyFields()` before serialization.
+
+{% endnote %}
+
 ## Delete and serialization
 
 ### toJSON()
@@ -146,6 +177,7 @@ Serializes an instance to JSON, excluding synthetic `{field}_bi` columns and con
 
 ```ts
 const user = await UserEntity.find({ uuid });
+await user.decryptLazyFields(); // if there are lazy fields
 console.log(JSON.stringify(user)); // without email_bi, government_id_bi
 ```
 

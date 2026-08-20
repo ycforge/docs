@@ -22,17 +22,20 @@ yarn format        # prettier --write
 
 ## Структура исходников
 
-- `src/core/` — типы, интерфейсы опций, DI-токены, маппер TS→YDB, утилиты SQL.
+- `src/core/` — типы, интерфейсы опций, DI-токены, маппер TS→YDB, утилиты SQL, валидация опций.
 - `src/decorators/` — все декораторы сущностей.
-- `src/entity/` — `YdbBaseEntity` (Active Record) и рантайм-зависимости.
+- `src/entity/` — `YdbBaseEntity` (Active Record фасад) и рантайм-зависимости.
+- `src/persistence/` — `YdbEntityPersistence`: CRUD, шифрование, lifecycle hooks.
+- `src/relations/` — `YdbEntityRelations`: eager/lazy relations, many-to-many.
+- `src/repository/` — `YdbRepository`, `YdbEntityManager`, `InjectRepository`.
 - `src/encryption/` — интерфейсы провайдеров шифрования.
-- `src/metadata/` — сбор метаданных из Reflect, глобальный реестр сущностей.
+- `src/metadata/` — сбор метаданных из Reflect, глобальный реестр сущностей, валидация.
 - `src/module/` — NestJS-интеграция (`YdbCoreModule`, `YdbModule`, repository-factory).
 - `src/schema/` — schema sync и генераторы DDL.
 - `src/transaction/` — `YdbTransactionManager`.
 - `src/credentials/` — credentials provider для auth_key.
 - `src/migrations/` — runner, loader, generator миграций.
-- `src/cli/` — бинарь `ydb-orm`.
+- `src/cli/` — бинарь `ydb-orm` (completion, diff, миграции).
 - `examples/` — примеры использования (01-basic-crud, 02-relations, 03-encryption, 04-schema-sync).
 
 ## Тесты

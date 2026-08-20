@@ -72,8 +72,14 @@ await UserEntity.insertMany(users);
 
 Удаляет запись по первичному ключу. Возвращает удалённую запись (`RETURNING *`) или `null`, если не найдена.
 
+Для составного PK передайте объект со всеми компонентами ключа:
+
 ```ts
+// Одиночный PK
 const deleted = await UserEntity.delete('5ad91505-d4f6-4a81-ab65-9dbc68cf4ed5');
+
+// Составной PK
+const deleted = await UserEntity.delete({ user_uuid: '...', role: 'admin' });
 ```
 
 ### updateBy(where, patch, options?)
@@ -142,6 +148,31 @@ const user = await UserEntity.find({ email: 'ivan@example.com' });
 
 Поиск по зашифрованному полю **без** blind index — ошибка. Подробнее — в разделе [Шифрование](encryption.md).
 
+## Ленивая дешифровка
+
+Если поле помечено `@YdbEncrypted({ lazy: true })`, при чтении из БД в инстанс записывается ciphertext, а не plaintext. Это экономит CPU, когда значение не требуется.
+
+```ts
+@YdbEntity('users')
+export class UserEntity extends YdbBaseEntity {
+  @YdbEncrypted({ lazy: true })
+  largeSecret: string;
+}
+
+const user = await UserEntity.find({ uuid });
+// user.largeSecret — пока ciphertext
+
+const plaintext = await user.decryptField('largeSecret');
+// или дешифровать все lazy-поля сразу:
+await user.decryptLazyFields();
+```
+
+{% note warning %}
+
+`toJSON()` и `JSON.stringify(entity)` бросают ошибку, пока в инстансе есть недешифрованные lazy-поля. Вызовите `await entity.decryptLazyFields()` перед сериализацией.
+
+{% endnote %}
+
 ## Удаление и сериализация
 
 ### toJSON()
@@ -150,6 +181,7 @@ const user = await UserEntity.find({ email: 'ivan@example.com' });
 
 ```ts
 const user = await UserEntity.find({ uuid });
+await user.decryptLazyFields(); // если есть lazy-поля
 console.log(JSON.stringify(user)); // без email_bi, government_id_bi
 ```
 

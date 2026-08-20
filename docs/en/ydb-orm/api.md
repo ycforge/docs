@@ -8,6 +8,8 @@
 | `YdbModule` | class | NestJS module: `forRoot()`, `forFeature([...])` |
 | `YdbBaseEntity` | class | Active Record base entity class |
 | `YdbQueryBuilder` | class | chainable query builder |
+| `YdbRepository<T>` | class | DI repository for an entity |
+| `YdbEntityManager` | class | repository factory |
 
 ## Decorators
 
@@ -16,7 +18,7 @@
 | `YdbEntity(tableName)` | class | table name + registry registration |
 | `YdbColumn(type)` | property | YDB column type |
 | `YdbPrimaryColumn(type)` | property | primary key column (composite PK supported) |
-| `YdbEncrypted(options?)` | property | encrypted field (`blindIndex`, `aadOverride`) |
+| `YdbEncrypted(options?)` | property | encrypted field (`blindIndex`, `aadOverride`, `lazy`) |
 | `YdbSecurityAAD()` | property | field participates in AAD |
 | `OneToMany(target, joinColumn)` | property | one-to-many relation |
 | `ManyToOne(target, joinColumn)` | property | many-to-one relation |
@@ -32,6 +34,8 @@
 | `BeforeInsert` / `AfterInsert` | method | insert lifecycle hooks |
 | `BeforeUpdate` | method | update lifecycle hook |
 | `AfterFind` | method | find lifecycle hook |
+| `BeforeRemove` | method | remove lifecycle hook |
+| `getLifecycleHooks(target)` | function | lifecycle hook metadata of a class |
 
 ## Active Record (static methods of `YdbBaseEntity`)
 
@@ -49,7 +53,24 @@
 | `deleteBy(where, options?)` | bulk delete by condition |
 | `query()` | create a QueryBuilder |
 
-Instance methods: `loadRelations([...])`, `toJSON()`.
+Instance methods: `loadRelations([...])`, `decryptField(name)`, `decryptLazyFields()`, `toJSON()`.
+
+## Repository / EntityManager
+
+| Export | Description |
+| --- | --- |
+| `YdbRepository<T>` | DI repository for an entity (CRUD + relations) |
+| `YdbEntityManager` | repository factory (`getRepository(Entity)`) |
+| `InjectRepository(Entity)` | decorator to inject a repository in NestJS |
+| `getRepositoryToken(Entity)` | DI token for a repository |
+| `getOrCreateRepository(Entity)` | get/create repository from runtime deps |
+
+## Persistence / Relations (ORM core)
+
+| Export | Description |
+| --- | --- |
+| `YdbEntityPersistence<T>` | CRUD, encryption, lifecycle hooks, enum/timestamp conversion |
+| `YdbEntityRelations<T>` | eager loading, lazy `loadRelations`, many-to-many |
 
 ## Types
 
@@ -67,6 +88,10 @@ Instance methods: `loadRelations([...])`, `toJSON()`.
 | `YdbValidationProvider` | validation interface (`validate`) |
 | `YdbMigration` / `YdbMigrationClass` | migration interface |
 | `BuiltQuery` / `OrderDirection` | QueryBuilder types |
+| `YdbEntityConstructor<T>` | entity constructor type |
+| `PersistenceDeps` | persistence dependencies (providers, uuid generator) |
+| `RelationsDeps` | relations dependencies (encryption providers) |
+| `LifecycleHooks` | lifecycle hook metadata type |
 
 ## DI tokens
 
@@ -87,6 +112,7 @@ Instance methods: `loadRelations([...])`, `toJSON()`.
 | `createDriver(opts, credentialsProvider?)` | creates and connects a driver |
 | `createExecutor(driver, opts)` | creates an executor |
 | `createCredentialsProvider(opts)` | credentials provider by `auth_type` |
+| `validateYdbModuleOptions(opts)` | fail-fast validation of module options |
 | `configureEntities(entities, opts)` | configures entities |
 | `AuthKeyCredentialsProvider` | JWT → IAM exchange via `fetch` |
 
@@ -126,3 +152,9 @@ Instance methods: `loadRelations([...])`, `toJSON()`.
 | `wrapExecutorWithLogging(exec, logger)` | wrap an executor with logging |
 | `Base64TestEncryptionProvider` | test encryption provider (stub) |
 | `ClassValidatorProvider` | validator via class-validator |
+
+{% note info %}
+
+Production-ready encryption and blind index providers (Yandex Cloud KMS, HMAC-SHA256) live in the separate package `@ycforge/orm-security-providers`.
+
+{% endnote %}

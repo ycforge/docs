@@ -8,6 +8,8 @@
 | `YdbModule` | класс | модуль NestJS: `forRoot()`, `forFeature([...])` |
 | `YdbBaseEntity` | класс | базовый класс Active Record сущности |
 | `YdbQueryBuilder` | класс | цепочный построитель запросов |
+| `YdbRepository<T>` | класс | DI-репозиторий для сущности |
+| `YdbEntityManager` | класс | фабрика репозиториев |
 
 ## Декораторы
 
@@ -16,7 +18,7 @@
 | `YdbEntity(tableName)` | класс | имя таблицы + регистрация в реестре |
 | `YdbColumn(type)` | свойство | YDB-тип колонки |
 | `YdbPrimaryColumn(type)` | свойство | колонка первичного ключа (составной PK поддерживается) |
-| `YdbEncrypted(options?)` | свойство | шифруемое поле (`blindIndex`, `aadOverride`) |
+| `YdbEncrypted(options?)` | свойство | шифруемое поле (`blindIndex`, `aadOverride`, `lazy`) |
 | `YdbSecurityAAD()` | свойство | поле участвует в AAD |
 | `OneToMany(target, joinColumn)` | свойство | связь один-ко-многим |
 | `ManyToOne(target, joinColumn)` | свойство | связь многие-к-одному |
@@ -32,6 +34,8 @@
 | `BeforeInsert` / `AfterInsert` | метод | lifecycle-хуки вставки |
 | `BeforeUpdate` | метод | lifecycle-хук обновления |
 | `AfterFind` | метод | lifecycle-хук чтения |
+| `BeforeRemove` | метод | lifecycle-хук удаления |
+| `getLifecycleHooks(target)` | функция | метаданные lifecycle-хуков класса |
 
 ## Active Record (статические методы `YdbBaseEntity`)
 
@@ -49,7 +53,24 @@
 | `deleteBy(where, options?)` | массовое удаление по условию |
 | `query()` | создать QueryBuilder |
 
-Методы экземпляра: `loadRelations([...])`, `toJSON()`.
+Методы экземпляра: `loadRelations([...])`, `decryptField(name)`, `decryptLazyFields()`, `toJSON()`.
+
+## Репозиторий / EntityManager
+
+| Экспорт | Описание |
+| --- | --- |
+| `YdbRepository<T>` | DI-репозиторий сущности (CRUD + relations) |
+| `YdbEntityManager` | фабрика репозиториев (`getRepository(Entity)`) |
+| `InjectRepository(Entity)` | декоратор инъекции репозитория в NestJS |
+| `getRepositoryToken(Entity)` | DI-токен репозитория |
+| `getOrCreateRepository(Entity)` | получить/создать репозиторий из runtime deps |
+
+## Persistence / Relations (ядро ORM)
+
+| Экспорт | Описание |
+| --- | --- |
+| `YdbEntityPersistence<T>` | CRUD, шифрование, lifecycle hooks, enum/timestamp-конвертация |
+| `YdbEntityRelations<T>` | eager loading, lazy `loadRelations`, many-to-many |
 
 ## Типы
 
@@ -67,6 +88,10 @@
 | `YdbValidationProvider` | интерфейс валидации (`validate`) |
 | `YdbMigration` / `YdbMigrationClass` | интерфейс миграции |
 | `BuiltQuery` / `OrderDirection` | типы QueryBuilder |
+| `YdbEntityConstructor<T>` | тип конструктора сущности |
+| `PersistenceDeps` | зависимости persistence (провайдеры, uuid-генератор) |
+| `RelationsDeps` | зависимости relations (провайдеры шифрования) |
+| `LifecycleHooks` | тип метаданных lifecycle-хуков |
 
 ## DI-токены
 
@@ -87,6 +112,7 @@
 | `createDriver(opts, credentialsProvider?)` | создаёт и подключает драйвер |
 | `createExecutor(driver, opts)` | создаёт executor |
 | `createCredentialsProvider(opts)` | credentials provider по `auth_type` |
+| `validateYdbModuleOptions(opts)` | fail-fast валидация опций модуля |
 | `configureEntities(entities, opts)` | настраивает сущности |
 | `AuthKeyCredentialsProvider` | обмен JWT → IAM через `fetch` |
 
@@ -126,3 +152,9 @@
 | `wrapExecutorWithLogging(exec, logger)` | обёртка executor с логированием |
 | `Base64TestEncryptionProvider` | тестовый провайдер шифрования (заглушка) |
 | `ClassValidatorProvider` | валидатор через class-validator |
+
+{% note info %}
+
+Готовые провайдеры шифрования и blind index для production (Yandex Cloud KMS, HMAC-SHA256) находятся в отдельном пакете `@ycforge/orm-security-providers`.
+
+{% endnote %}

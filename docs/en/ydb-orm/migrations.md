@@ -42,6 +42,7 @@ ydb-orm migration:show                    # migration status
 ydb-orm migration:check                   # check that all migrations are applied
 ydb-orm schema:verify                     # verify DB schema against entity metadata
 ydb-orm entity:create UserProfile         # entity ./src/user-profile.entity.ts
+ydb-orm completion bash                   # shell completion script (bash|zsh|fish)
 ```
 
 Options:
@@ -49,6 +50,19 @@ Options:
 - `--dir <path>` — migrations directory (default `./migrations`; for `entity:create` — `./src`).
 - `--config <path>` — path to config.
 - `--json` — machine-readable output for `migration:show` and `migration:check`.
+
+`migration:generate` and `schema:verify` print a colored diff of "entities vs database" discrepancies, grouped by table. Colors are disabled when output is not a TTY or via the `NO_COLOR` environment variable.
+
+## Shell completion
+
+```bash
+# bash
+ydb-orm completion bash | sudo tee /etc/bash_completion.d/ydb-orm
+# zsh
+ydb-orm completion zsh > ~/.zsh/completions/_ydb-orm
+# fish
+ydb-orm completion fish > ~/.config/fish/completions/ydb-orm.fish
+```
 
 ## CLI config
 

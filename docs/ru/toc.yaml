@@ -23,6 +23,8 @@ items:
         href: ydb-orm/entity.md
       - name: Active Record
         href: ydb-orm/active-record.md
+      - name: Репозиторий (DI)
+        href: ydb-orm/repository.md
       - name: QueryBuilder
         href: ydb-orm/query-builder.md
       - name: Связи (relations)

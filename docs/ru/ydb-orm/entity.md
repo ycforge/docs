@@ -73,13 +73,14 @@ export class UserRoleEntity extends YdbBaseEntity {
 
 {% endnote %}
 
-## @YdbEncrypted({ blindIndex })
+## @YdbEncrypted({ blindIndex, lazy })
 
 Помечает поле как шифруемое. Значение шифруется перед записью и расшифровывается после чтения.
 
 - `blindIndex: true` (по умолчанию) — добавляет synthetic-колонку `{field}_bi` для поиска по хешу значения.
 - `blindIndex: false` — хранится только ciphertext, поиск по полю невозможен.
 - `aadOverride` — строка, которая будет использоваться как AAD вместо полей `@YdbSecurityAAD` (нужна при массовых операциях `updateBy`).
+- `lazy: true` — ленивая дешифровка: поле не дешифруется при чтении из БД, в инстансе остаётся ciphertext. Plaintext возвращают `await entity.decryptField('field')` или `await entity.decryptLazyFields()`. `toJSON()` / `JSON.stringify()` бросают ошибку, пока lazy-поля не дешифрованы. Экономит CPU на запросах, где значение не нужно.
 
 Шифротекст хранится в колонке `Bytes` (raw bytes). Тип из `@YdbColumn` для таких полей игнорируется, объявлять его не нужно.
 
@@ -235,7 +236,7 @@ export class SessionEntity extends YdbBaseEntity {
 
 ## Lifecycle-хуки
 
-Метод-декораторы: `@BeforeInsert`, `@AfterInsert`, `@BeforeUpdate`, `@AfterFind`. Хуки вызываются последовательно и ожидаются (`await`).
+Метод-декораторы: `@BeforeInsert`, `@AfterInsert`, `@BeforeUpdate`, `@AfterFind`, `@BeforeRemove`. Хуки вызываются последовательно и ожидаются (`await`).
 
 ```ts
 import {
@@ -244,6 +245,7 @@ import {
   YdbPrimaryColumn,
   BeforeInsert,
   AfterFind,
+  BeforeRemove,
 } from '@ycforge/ydb-orm';
 
 @YdbEntity('users')
@@ -260,12 +262,17 @@ export class UserEntity extends YdbBaseEntity {
   normalize() {
     this.name = this.name.trim();
   }
+
+  @BeforeRemove()
+  cleanup() {
+    // вызывается перед удалением по PK
+  }
 }
 ```
 
 {% note warning %}
 
-Хуки `@BeforeUpdate` работает на инстансе, поэтому `updateBy` (массовая операция) его не вызывает.
+Хуки `@BeforeUpdate` и `@BeforeRemove` работают на инстансе, поэтому массовые операции `updateBy` / `deleteBy` их не вызывают.
 
 {% endnote %}
 
