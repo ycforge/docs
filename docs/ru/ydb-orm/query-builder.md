@@ -17,8 +17,9 @@ const photos = await PhotoEntity.query()
 
 | Метод | Описание |
 | --- | --- |
-| `where(criteria)` | условия равенства (AND), объединяются с предыдущими |
+| `where(criteria)` | условия (AND), объединяются с предыдущими |
 | `andWhere(criteria)` | синоним `where()` для читаемости цепочек |
+| `orWhere(criteria)` | объединяет критерий с предыдущими через `OR` |
 | `orderBy(field, dir?)` | сортировка (`ASC`/`DESC`), заменяет предыдущую |
 | `addOrderBy(field, dir?)` | дополнительная сортировка (для составной) |
 | `select(columns)` | конкретные колонки вместо `SELECT *` |
@@ -74,12 +75,71 @@ console.log(values); // { is_public: true }
 const count = await PhotoEntity.query().where({ is_public: true }).getCount();
 ```
 
+### Операторы сравнения
+
+В `where()`/`andWhere()` можно использовать объекты-операторы:
+
+```ts
+const users = await UserEntity.query()
+  .where({ age: { $gte: 18 } })
+  .andWhere({ status: { $in: ['active', 'pending'] } })
+  .andWhere({ name: { $like: 'Ivan%' } })
+  .getMany();
+```
+
+Поддерживаемые операторы:
+
+| Оператор | Описание |
+| --- | --- |
+| `$eq` | равенство (используется по умолчанию) |
+| `$ne` | не равно, `null` превращается в `IS NOT NULL` |
+| `$gt`, `$gte`, `$lt`, `$lte` | сравнения |
+| `$like` | `LIKE` (только `Utf8`-колонки) |
+| `$in` | `IN (...)` |
+| `$between` | `BETWEEN lo AND hi` |
+
+### Логические группы `$or` и `$and`
+
+```ts
+const users = await UserEntity.query()
+  .where({
+    $or: [
+      { balance: { $gte: 100 } },
+      { is_admin: true },
+    ],
+    is_banned: false,
+  })
+  .getMany();
+```
+
+`$and` и `$or` принимают массив вложенных объектов; группы можно вкладывать друг в друга. Через `orWhere()` можно добавить одно условие, объединённое с предыдущими через `OR`:
+
+```ts
+const users = await UserEntity.query()
+  .where({ is_active: true })
+  .orWhere({ role: 'admin' })
+  .getMany();
+```
+
 ### JSON-условия
 
 ```ts
 const events = await EventEntity.query()
   .andWhereJsonExists('metadata', '$.settings.theme')
   .andWhereJsonValue('metadata', '$.role', 'admin')
+  .getMany();
+```
+
+Те же JSON-проверки можно записать через объектные операторы:
+
+```ts
+const events = await EventEntity.query()
+  .where({
+    metadata: { $jsonExists: '$.settings.theme' },
+  })
+  .andWhere({
+    payload: { $jsonValue: { path: '$.role', equals: 'admin' } },
+  })
   .getMany();
 ```
 
@@ -96,6 +156,6 @@ await this.trxManager.runInTransaction(async (trx) => {
 
 ## Ограничения
 
-- Условия — только равенство (`=`), объединяются через `AND`. Повторное поле в `andWhere` перезаписывает предыдущее значение.
+- Условия на одном уровне объединяются через `AND`. Повторное поле в `andWhere` перезаписывает предыдущее значение.
 - Поля в `WHERE` и `ORDER BY` валидируются по метаданным сущности — неизвестное поле вызовет ошибку.
-- Поддержка зашифрованных полей с blind index — такая же, как в `find`/`findAll`.
+- Поддержка зашифрованных полей с blind index — такая же, как в `find`/`findAll`: доступно только равенство (`$eq` / прямое значение); остальные операторы на зашифрованном поле вызовут ошибку.
