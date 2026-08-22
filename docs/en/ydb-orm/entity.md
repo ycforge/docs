@@ -22,6 +22,12 @@ The column type is a YDB primitive string:
 | `Json` | native JSON (YDB) |
 | `JsonDocument` | native JSON document (YDB) |
 
+{% note info %}
+
+**`Timestamp` precision is limited to milliseconds**: JS `Date` only stores milliseconds, so sub-millisecond values (micro-/nanoseconds) are not preserved — the lower YDB microsecond digits are lost on read. Date types accept `Date`, a number (ms since epoch), or an ISO string on input.
+
+{% endnote %}
+
 ## @YdbEntity('table_name')
 
 Class decorator: sets the table name and registers the class in the global entity registry (used by schema sync).
@@ -88,9 +94,9 @@ export class UserRoleEntity extends YdbBaseEntity {
 }
 ```
 
-{% note info %}
+{% note warning %}
 
-If no primary key is declared, the `uuid` column (Uuid) is used by default. It is generated automatically on insert (UUID v7 by default, configurable via the `uuidVersion` option).
+A primary key is **required**: without `@YdbPrimaryColumn` the entity cannot be initialized — metadata validation, schema sync, and runtime operations throw `must declare at least one primary key via @YdbPrimaryColumn`. There is no "default `uuid` PK". If a `uuid` column of type `Uuid` is declared among the PK columns, its value is generated automatically on insert (UUID v7 by default, configurable via the `uuidVersion` option).
 
 {% endnote %}
 
@@ -241,13 +247,17 @@ The `@YdbUpdateDateColumn` column is also populated by `updateBy` and `insertMan
 
 {% endnote %}
 
-## @YdbTtl({ interval, column? })
+## @YdbTtl({ interval, column, unit? })
 
 Declarative table TTL (YDB table TTL). Generates `TTL = Interval(...) ON column` in `CREATE TABLE`. Can only be applied once per class.
 
+- `interval` — ISO 8601 duration (e.g. `PT2H`, `P30D`);
+- `column` — a **required** column declared via `@YdbColumn`: type `Date` / `Datetime` / `Timestamp` (no `unit`) or numeric `Uint32` / `Uint64` / `DyNumber` (then `unit` is required);
+- `unit` — the unit for a numeric column: `seconds` | `milliseconds` | `microseconds` | `nanoseconds`.
+
 ```ts
 @YdbEntity('sessions')
-@YdbTtl({ interval: 'PT2H' })
+@YdbTtl({ interval: 'PT2H', column: 'expires_at' })
 export class SessionEntity extends YdbBaseEntity {
   @YdbPrimaryColumn('Uuid')
   uuid: string;
@@ -257,7 +267,7 @@ export class SessionEntity extends YdbBaseEntity {
 
 ## Lifecycle hooks
 
-Method decorators: `@BeforeInsert`, `@AfterInsert`, `@BeforeUpdate`, `@AfterFind`, `@BeforeRemove`. Hooks run sequentially and are awaited.
+Method decorators (no parentheses): `@BeforeInsert`, `@AfterInsert`, `@BeforeUpdate`, `@AfterFind`, `@BeforeRemove`. Hooks run sequentially and are awaited.
 
 ```ts
 import {
@@ -274,17 +284,17 @@ export class UserEntity extends YdbBaseEntity {
   @YdbPrimaryColumn('Uuid')
   uuid: string;
 
-  @BeforeInsert()
+  @BeforeInsert
   setDefaults() {
     this.created_at = new Date();
   }
 
-  @AfterFind()
+  @AfterFind
   normalize() {
     this.name = this.name.trim();
   }
 
-  @BeforeRemove()
+  @BeforeRemove
   cleanup() {
     // called before PK-based deletion
   }

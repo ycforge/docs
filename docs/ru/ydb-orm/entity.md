@@ -22,6 +22,12 @@
 | `Json` | нативный JSON (YDB) |
 | `JsonDocument` | нативный JSON-документ (YDB) |
 
+{% note info %}
+
+**Точность `Timestamp` ограничена миллисекундами**: JS `Date` хранит только миллисекунды, поэтому субмиллисекундные значения (микро-/наносекунды) не сохраняются — при чтении младшие разряды YDB-микросекунд теряются. Дата-типы на входе принимают `Date`, число (мс от эпохи) или ISO-строку.
+
+{% endnote %}
+
 ## @YdbEntity('table_name')
 
 Класс-декоратор: задаёт имя таблицы и регистрирует класс в глобальном реестре сущностей (используется schema sync).
@@ -88,9 +94,9 @@ export class UserRoleEntity extends YdbBaseEntity {
 }
 ```
 
-{% note info %}
+{% note warning %}
 
-Если первичный ключ не объявлен, по умолчанию используется колонка `uuid` (Uuid). Она генерируется автоматически при вставке (по умолчанию UUID v7, настраивается опцией `uuidVersion`).
+Первичный ключ **обязателен**: без `@YdbPrimaryColumn` нельзя инициализировать сущность — валидация метаданных, schema sync и runtime-операции бросают ошибку `must declare at least one primary key via @YdbPrimaryColumn`. «Дефолтного `uuid`-PK» не существует. Если среди PK-колонок объявлена колонка `uuid` типа `Uuid`, её значение генерируется автоматически при вставке (UUID v7 по умолчанию, настраивается опцией `uuidVersion`).
 
 {% endnote %}
 
@@ -241,13 +247,17 @@ export class UserEntity extends YdbBaseEntity {
 
 {% endnote %}
 
-## @YdbTtl({ interval, column? })
+## @YdbTtl({ interval, column, unit? })
 
 Декларативный TTL таблицы (YDB table TTL). Генерирует `TTL = Interval(...) ON column` в `CREATE TABLE`. Можно применить только один раз на класс.
 
+- `interval` — ISO 8601 duration (например, `PT2H`, `P30D`);
+- `column` — **обязательная** колонка, объявленная через `@YdbColumn`: тип `Date` / `Datetime` / `Timestamp` (без `unit`) либо числовой `Uint32` / `Uint64` / `DyNumber` (тогда обязателен `unit`);
+- `unit` — единица измерения для числовой колонки: `seconds` | `milliseconds` | `microseconds` | `nanoseconds`.
+
 ```ts
 @YdbEntity('sessions')
-@YdbTtl({ interval: 'PT2H' })
+@YdbTtl({ interval: 'PT2H', column: 'expires_at' })
 export class SessionEntity extends YdbBaseEntity {
   @YdbPrimaryColumn('Uuid')
   uuid: string;
@@ -257,7 +267,7 @@ export class SessionEntity extends YdbBaseEntity {
 
 ## Lifecycle-хуки
 
-Метод-декораторы: `@BeforeInsert`, `@AfterInsert`, `@BeforeUpdate`, `@AfterFind`, `@BeforeRemove`. Хуки вызываются последовательно и ожидаются (`await`).
+Метод-декораторы (без скобок): `@BeforeInsert`, `@AfterInsert`, `@BeforeUpdate`, `@AfterFind`, `@BeforeRemove`. Хуки вызываются последовательно и ожидаются (`await`).
 
 ```ts
 import {
@@ -274,17 +284,17 @@ export class UserEntity extends YdbBaseEntity {
   @YdbPrimaryColumn('Uuid')
   uuid: string;
 
-  @BeforeInsert()
+  @BeforeInsert
   setDefaults() {
     this.created_at = new Date();
   }
 
-  @AfterFind()
+  @AfterFind
   normalize() {
     this.name = this.name.trim();
   }
 
-  @BeforeRemove()
+  @BeforeRemove
   cleanup() {
     // вызывается перед удалением по PK
   }
