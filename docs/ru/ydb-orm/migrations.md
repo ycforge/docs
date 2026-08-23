@@ -38,8 +38,8 @@ ydb-orm migration:create CreateUsers      # пустая миграция ./migr
 ydb-orm migration:generate AddPhotos      # миграция по diff сущностей и БД
 ydb-orm migration:run                     # применить все новые миграции
 ydb-orm migration:revert                  # откатить последнюю
-ydb-orm migration:show                    # статус миграций
-ydb-orm migration:check                   # проверить, что все миграции применены
+ydb-orm migration:show                    # статус миграций (алиас — migration:status)
+ydb-orm migration:check                   # проверка готовности для CI (exit != 0, если не готово)
 ydb-orm schema:verify                     # проверить схему БД против метаданных сущностей
 ydb-orm entity:create UserProfile         # сущность ./src/user-profile.entity.ts
 ydb-orm completion bash                   # скрипт shell-автодополнения (bash|zsh|fish)
@@ -49,7 +49,24 @@ ydb-orm completion bash                   # скрипт shell-автодопо�
 
 - `--dir <path>` — директория миграций (по умолчанию `./migrations`; для `entity:create` — `./src`).
 - `--config <path>` — путь к конфигу.
-- `--json` — machine-readable вывод для `migration:show` и `migration:check`.
+- `--json` — машинночитаемый вывод для `migration:show`, `migration:status` и `migration:check`.
+
+### Проверка готовности
+
+`migration:check`, `migration:status` и `migration:show` — **read-only**: команды только читают состояние (`SELECT` из `ydb_migrations` + `DescribeTable` для сущностей) и ничего не меняют. Состояния и exit-коды:
+
+| Состояние | Exit-код | Значение |
+| --- | --- | --- |
+| готово | 0 | все миграции применены; схема совпадает, если проверялась |
+| pending | 1 | есть неприменённые миграции |
+| interrupted | 2 | есть прерванные миграции (`state='started'`): прошлый запуск оборвался посреди миграции, БД может быть частично изменена |
+| schema-drift | 3 | схема БД расходится с метаданными сущностей (проверяется, только если в конфиге задан массив `entities`) |
+| modified | 4 | содержимое применённой миграции изменилось после применения |
+| ошибка команды | 5 | не удалось подключиться, прочитать состояние или неожиданный сбой |
+
+Прерванные и изменённые миграции явно не считаются успешно применёнными; orphan-записи (файл удалён после применения) выводятся в отчёте, но сами по себе готовность не ломают. При нескольких состояниях exit-код выбирается по приоритету: `interrupted` → `modified` → `pending` → `schema-drift`. Разрешить прерванную миграцию можно командой `migration:repair`.
+
+Текстовый режим: сводка или список миграций — в stdout, проблемы и diff схемы — в stderr, итоговая строка начинается с `Up to date:` либо `Not ready:`. Цвет diff определяется по реальному потоку вывода и отключается вне TTY и через `NO_COLOR`. Для CI-парсинга используйте `--json`: весь отчёт приходит в stdout со стабильной схемой — `ready`, `state`, `states`, `exitCode`, списки `pending`/`interrupted`/`modified`/`orphaned`, массив `migrations` с флагами каждой миграции и блок `schema` с найденными расхождениями.
 
 `migration:generate` и `schema:verify` выводят цветной diff расхождений «сущности vs БД», сгруппированный по таблицам. Цвета отключаются при выводе не в TTY или через переменную `NO_COLOR`.
 

@@ -38,8 +38,8 @@ ydb-orm migration:create CreateUsers      # empty migration ./migrations/<ts>-Cr
 ydb-orm migration:generate AddPhotos      # migration by entity↔DB diff
 ydb-orm migration:run                     # apply all new migrations
 ydb-orm migration:revert                  # revert the last one
-ydb-orm migration:show                    # migration status
-ydb-orm migration:check                   # check that all migrations are applied
+ydb-orm migration:show                    # migration status (alias — migration:status)
+ydb-orm migration:check                   # CI readiness check (non-zero exit when not ready)
 ydb-orm schema:verify                     # verify DB schema against entity metadata
 ydb-orm entity:create UserProfile         # entity ./src/user-profile.entity.ts
 ydb-orm completion bash                   # shell completion script (bash|zsh|fish)
@@ -49,7 +49,24 @@ Options:
 
 - `--dir <path>` — migrations directory (default `./migrations`; for `entity:create` — `./src`).
 - `--config <path>` — path to config.
-- `--json` — machine-readable output for `migration:show` and `migration:check`.
+- `--json` — machine-readable output for `migration:show`, `migration:status` and `migration:check`.
+
+### Readiness check
+
+`migration:check`, `migration:status` and `migration:show` are **read-only**: they only inspect the current state (`SELECT` from `ydb_migrations` + `DescribeTable` for entities) and never change anything. States and exit codes:
+
+| State | Exit code | Meaning |
+| --- | --- | --- |
+| ready | 0 | all migrations applied; schema matches if it was checked |
+| pending | 1 | there are unapplied migrations |
+| interrupted | 2 | there are interrupted migrations (`state='started'`): a previous run stopped mid-way, the database may be partially migrated |
+| schema-drift | 3 | the database schema differs from entity metadata (checked only when the `entities` array is set in the config) |
+| modified | 4 | content of an applied migration changed after it was applied |
+| command error | 5 | failed to connect, read state, or an unexpected failure |
+
+Interrupted and modified migrations are explicitly not treated as successfully applied; orphan records (the file was deleted after applying) are shown in the report but do not break readiness on their own. When several states are detected at once, the exit code follows the priority: `interrupted` → `modified` → `pending` → `schema-drift`. Resolve an interrupted migration with `migration:repair`.
+
+Text mode: summary or migration list goes to stdout, problems and the schema diff go to stderr; the final line starts with `Up to date:` or `Not ready:`. Diff colors follow the real output stream and are disabled outside a TTY and by `NO_COLOR`. For CI parsing use `--json`: the whole report is printed to stdout with a stable schema — `ready`, `state`, `states`, `exitCode`, the `pending`/`interrupted`/`modified`/`orphaned` lists, the `migrations` array with per-migration flags, and the `schema` block with found discrepancies.
 
 `migration:generate` and `schema:verify` print a colored diff of "entities vs database" discrepancies, grouped by table. Colors are disabled when output is not a TTY or via the `NO_COLOR` environment variable.
 
