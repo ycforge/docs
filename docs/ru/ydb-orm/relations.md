@@ -142,6 +142,25 @@ const user = await UserEntity.find({ uuid });
 // user.posts и user.profile уже заполнены, дополнительных запросов не было
 ```
 
+Eager-загрузка поддерживает **вложенные пути** (issue #16): путь из имён relations через точку загружает каждый уровень батчами, перенося первичные ключи предыдущего уровня вперёд. N+1 отсутствует на любой глубине — для N корневых сущностей и глубины D ORM выполняет по одному batch-запросу на уровень связи.
+
+```ts
+@YdbEntity('photos')
+@EagerLoad(['tags.owner'])
+export class PhotoEntity extends YdbBaseEntity {
+  @ManyToMany(() => TagEntity, (t) => t.photos)
+  @JoinTable('photo_tag')
+  tags: TagEntity[];
+
+  // ...
+}
+
+const photo = await PhotoEntity.find({ uuid });
+// photo.tags загружены, у каждого тега загружен owner
+```
+
+Каждый сегмент пути обязан быть объявленной связью (`@OneToMany` / `@ManyToOne` / `@OneToOne` / `@ManyToMany`); неизвестный сегмент падает до выполнения SQL. `afterFind` срабатывает ровно один раз для каждой связанной сущности, сначала для самых глубоких уровней.
+
 ### Ленивая загрузка
 
 Метод экземпляра `loadRelations([...])` подгружает relations вручную.

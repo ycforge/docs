@@ -142,6 +142,25 @@ const user = await UserEntity.find({ uuid });
 // user.posts and user.profile are already populated, no extra queries
 ```
 
+Eager loading supports **nested paths** (issue #16): a dot-separated path loads each relation level in batches, carrying the primary keys from the previous level forward. There is no N+1 at any depth — for N root entities and depth D the ORM runs one batch query per relation level.
+
+```ts
+@YdbEntity('photos')
+@EagerLoad(['tags.owner'])
+export class PhotoEntity extends YdbBaseEntity {
+  @ManyToMany(() => TagEntity, (t) => t.photos)
+  @JoinTable('photo_tag')
+  tags: TagEntity[];
+
+  // ...
+}
+
+const photo = await PhotoEntity.find({ uuid });
+// photo.tags are populated, and every tag.owner is populated too
+```
+
+Each path segment must be a declared relation (`@OneToMany` / `@ManyToOne` / `@OneToOne` / `@ManyToMany`). An unknown segment throws before any SQL is executed. `afterFind` fires exactly once per hydrated entity, deepest level first.
+
 ### Lazy loading
 
 The instance method `loadRelations([...])` loads relations manually.
