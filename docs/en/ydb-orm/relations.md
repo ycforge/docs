@@ -152,6 +152,52 @@ await post.loadRelations(['user']);
 console.log(post.user?.name);
 ```
 
+## Filtering by related entities (#17)
+
+In a WHERE clause you can use a relation property instead of a column, with an object of conditions on the related entity's columns. Root rows are filtered by the existence of at least one matching related row (`EXISTS` semantics):
+
+```ts
+// Users who have a 'Hello' post (one-to-many)
+await UserEntity.findAll({ posts: { title: 'Hello' } });
+
+// Multiple related predicates + plain root conditions are combined with AND
+await UserEntity.findAll({
+  name: 'Ivan',
+  posts: { title: { $like: '%yql%' } },
+});
+
+// Logical groups can mix root columns and relations
+await UserEntity.findAll({
+  $or: [
+    { uuid: someUuid },
+    { posts: { user_uuid: otherUuid } },
+  ],
+});
+```
+
+The generated YQL is a semi-join via `IN` with an uncorrelated subquery (YQL core does not support correlated subqueries). Duplicate root rows are impossible, so no `JOIN`/`DISTINCT` is required:
+
+| relation | condition |
+| --- | --- |
+| one-to-many | `root.pk IN (SELECT child.fk FROM target WHERE pred)` |
+| many-to-one / one-to-one | `root.fk IN (SELECT target.pk FROM target WHERE pred)` |
+| many-to-many | `root.pk IN (SELECT jt.owner FROM jt WHERE jt.inverse IN (SELECT target.pk FROM target WHERE pred))` |
+
+An empty predicate `{ posts: {} }` means "has at least one related row". Relations can be nested: `{ user: { profile: { bio: 'dev' } } }`.
+
+{% note warning %}
+
+Filtering by related entities is allowed **only for non-encrypted columns**: `@YdbEncrypted` fields (including their blind-index `{field}_bi` columns) are forbidden in related predicates.
+
+{% endnote %}
+
+Limitations:
+
+- paths are resolved strictly from relation metadata; arbitrary SQL fragments cannot be passed;
+- unknown relation or column, undeclared join column, incompatible join column types, composite primary key on the join side and a missing `@JoinTable` for many-to-many are rejected with a clear error **before executing SQL**;
+- all values are bound as query parameters;
+- the filter works in every method sharing the WHERE pipeline (`find`, `findAll`, `count`, `updateBy`, `deleteBy`) and in the [QueryBuilder](query-builder.md), including `{ trx }` and ambient transactions.
+
 ## Saving relations
 
 The ORM does not manage cascades automatically — relations are saved through FK columns. Typically all records are created in a single [transaction](transactions.md):
