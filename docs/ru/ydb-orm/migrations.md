@@ -90,6 +90,18 @@ export default {
 - нет колонок → `ADD COLUMN` (+ `DROP COLUMN` в `down`);
 - расхождение типа/PK и лишние колонки не меняются автоматически — попадают в миграцию как `WARNING`-комментарии.
 
+### Подсказки о переименовании
+
+Если расхождение выглядит как переименование колонки — ровно одна лишняя колонка в БД и ровно одна новая в сущности с тем же типом, без участия PK, индексов, TTL и blind-index (`_bi`) — команда не делает молча `ADD COLUMN` + `DROP COLUMN`. Вместо этого для такой пары ADD/DROP подавляются, а в `up()`/`down()` добавляется комментарий-подсказка:
+
+```ts
+// SUGGESTION (not applied automatically): possible column rename detected.
+// YQL has no ALTER TABLE RENAME COLUMN yet — verify the data and migrate manually:
+//   ALTER TABLE `photos` RENAME COLUMN `label` TO `title`;
+```
+
+Подсказка никогда не исполняется автоматически: YQL пока не поддерживает `RENAME COLUMN` (в YDB переименовываются только таблицы), применение — всегда ручное решение после проверки данных. При неоднозначности (несколько кандидатов, ключевые/индексированные/TTL-колонки, метаданные шифрования) поведение прежнее: `ADD COLUMN` + `WARNING`. Та же подсказка видна в цветном diff команды `schema:verify`.
+
 ```bash
 ydb-orm migration:generate AddPhotos
 ```

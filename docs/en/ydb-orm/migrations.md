@@ -90,6 +90,18 @@ The command builds a diff across all `entities` from the config:
 - no columns → `ADD COLUMN` (+ `DROP COLUMN` in `down`);
 - type/PK mismatches and extra columns are not changed automatically — they appear in the migration as `WARNING` comments.
 
+### Rename hints
+
+When a diff looks like a column rename — exactly one extra DB column and exactly one new entity column with the same type, with no PK, index, TTL or blind-index (`_bi`) involvement — the command does not silently emit `ADD COLUMN` + `DROP COLUMN`. Instead, ADD/DROP are suppressed for that pair and a comment hint is added to `up()`/`down()`:
+
+```ts
+// SUGGESTION (not applied automatically): possible column rename detected.
+// YQL has no ALTER TABLE RENAME COLUMN yet — verify the data and migrate manually:
+//   ALTER TABLE `photos` RENAME COLUMN `label` TO `title`;
+```
+
+The hint is never executed automatically: YQL does not support `RENAME COLUMN` yet (only tables can be renamed in YDB), so applying it is always a manual decision after verifying the data. If the situation is ambiguous (multiple candidates, key/indexed/TTL columns, encryption metadata), the behavior stays as before: `ADD COLUMN` + `WARNING`. The same hint appears in the colored diff of `schema:verify`.
+
 ```bash
 ydb-orm migration:generate AddPhotos
 ```
