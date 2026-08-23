@@ -53,7 +53,7 @@ Options:
 
 ### Readiness check
 
-`migration:check`, `migration:status` and `migration:show` are **read-only**: they only inspect the current state (`SELECT` from `ydb_migrations` + `DescribeTable` for entities) and never change anything. States and exit codes:
+`migration:check`, `migration:status` and `migration:show` are **read-only**: they only inspect the current state (`DescribeTable` for `ydb_migrations` + a bare `SELECT` of its records; `DescribeTable` for entities) and never change anything — in particular, the bookkeeping table is neither created nor altered (no `CREATE TABLE`/`ALTER TABLE`). States and exit codes:
 
 | State | Exit code | Meaning |
 | --- | --- | --- |
@@ -63,6 +63,8 @@ Options:
 | schema-drift | 3 | the database schema differs from entity metadata (checked only when the `entities` array is set in the config) |
 | modified | 4 | content of an applied migration changed after it was applied |
 | command error | 5 | failed to connect, read state, or an unexpected failure |
+
+If the `ydb_migrations` bookkeeping table does not exist yet (a fresh database), it is not created: nothing is considered applied — with migration files present that is pending (exit 1), without them it is ready (exit 0). In `--json` this state is distinguished by the `bookkeeping: {exists: false}` field; legacy tables without the `hash`/`state` columns are read as-is, without ALTER.
 
 Interrupted and modified migrations are explicitly not treated as successfully applied; orphan records (the file was deleted after applying) are shown in the report but do not break readiness on their own. When several states are detected at once, the exit code follows the priority: `interrupted` → `modified` → `pending` → `schema-drift`. Resolve an interrupted migration with `migration:repair`.
 
