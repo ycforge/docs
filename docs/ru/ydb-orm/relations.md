@@ -152,6 +152,52 @@ await post.loadRelations(['user']);
 console.log(post.user?.name);
 ```
 
+## Фильтрация по связанным сущностям (#17)
+
+В WHERE вместо колонки можно указать свойство-связь с объектом условий по колонкам связанной сущности. Корень фильтруется по наличию хотя бы одной подходящей связанной строки (семантика `EXISTS`):
+
+```ts
+// Пользователи, у которых есть роль 'admin' (one-to-many)
+await UserEntity.findAll({ posts: { title: 'Hello' } });
+
+// Несколько related-предикатов + обычные условия корня объединяются через AND
+await UserEntity.findAll({
+  name: 'Ivan',
+  posts: { title: { $like: '%yql%' } }, // many-to-one/one-to-many — любой тип связи
+});
+
+// Логические группы смешивают колонки корня и связи
+await UserEntity.findAll({
+  $or: [
+    { uuid: someUuid },
+    { posts: { user_uuid: otherUuid } },
+  ],
+});
+```
+
+Генерируемый YQL — полуслияние `IN` с некоррелированным подзапросом (коррелированные подзапросы ядром YQL не поддерживаются). Дубликаты корневых строк при этом невозможны, поэтому `JOIN`/`DISTINCT` не нужны:
+
+| связь | условие |
+| --- | --- |
+| one-to-many | `root.pk IN (SELECT child.fk FROM target WHERE pred)` |
+| many-to-one / one-to-one | `root.fk IN (SELECT target.pk FROM target WHERE pred)` |
+| many-to-many | `root.pk IN (SELECT jt.owner FROM jt WHERE jt.inverse IN (SELECT target.pk FROM target WHERE pred))` |
+
+Пустой предикат `{ posts: {} }` означает «есть хотя бы одна связанная строка». Связи можно вкладывать: `{ user: { profile: { bio: 'dev' } } }`.
+
+{% note warning %}
+
+Фильтрация по связанным сущностям разрешена **только для нешифрованных колонок**: поля `@YdbEncrypted` (включая их blind-index-колонки `{field}_bi`) в related-предикатах запрещены.
+
+{% endnote %}
+
+Ограничения:
+
+- пути резолвятся строго по метаданным связей; произвольные SQL-фрагменты передать нельзя;
+- неизвестная связь или колонка, необъявленная join-колонка, несовместимые типы join-колонок, составной PK на стороне соединения и отсутствие `@JoinTable` у many-to-many отвергаются понятной ошибкой **до выполнения SQL**;
+- все значения биндятся параметрами запроса;
+- фильтр работает во всех методах с общим конвейером WHERE (`find`, `findAll`, `count`, `updateBy`, `deleteBy`) и в [QueryBuilder](query-builder.md), включая поддержку `{ trx }` и ambient-транзакций.
+
 ## Сохранение связей
 
 ORM не управляет каскадами автоматически — связи сохраняются через FK-колонки. Обычно все записи создаются в одной [транзакции](transactions.md):
