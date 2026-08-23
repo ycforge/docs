@@ -51,6 +51,79 @@ Options:
 - `--config <path>` — path to config.
 - `--json` — machine-readable output for `migration:show`, `migration:status` and `migration:check`.
 
+### Interactive entity:create
+
+In a TTY, `ydb-orm entity:create <name>` starts an interactive entity wizard:
+
+1. table name (defaults to snake_case of the entity name, validated);
+2. columns in a loop "name → YDB type → PK → encrypted/blind index → enum (values + Utf8/Int32 storage)";
+3. for date-like columns (`Date`/`Datetime`/`Timestamp`) — auto creation/update timestamps (`@YdbCreateDateColumn`/`@YdbUpdateDateColumn`);
+4. optional TTL (`@YdbTtl`, ISO 8601 duration, e.g. `PT2H`) on a chosen date-like column;
+5. preview of the generated file and a write confirmation.
+
+Guarantees:
+
+- every entered definition is validated **before** any file is written: table and property names (identifiers `[A-Za-z_][A-Za-z0-9_]*`, no collisions with `YdbBaseEntity` members), presence of a PK, uniqueness of columns and enum values, date column types, TTL interval;
+- an existing file is never overwritten: the collision is detected before the first question and fails the command;
+- cancellation (Ctrl+C) and EOF (Ctrl+D) exit cleanly (exit code 130) without writing anything;
+- no database access and no DDL — purely local file generation;
+- outside a TTY (CI, scripts, closed stdin) input is never read: the default template (`uuid` PK of type `Uuid` + a `name` column) is generated deterministically and the command does not hang.
+
+Example of a generated entity:
+
+```ts
+import {
+  YdbBaseEntity,
+  YdbColumn,
+  YdbCreateDateColumn,
+  YdbEntity,
+  YdbEnum,
+  YdbPrimaryColumn,
+  YdbTtl,
+} from '@ycforge/ydb-orm';
+
+export enum StatusEnum {
+  ACTIVE = 'active',
+  NEW_ORDER = 'new_order',
+}
+
+@YdbEntity('orders')
+@YdbTtl({ interval: 'PT30D', column: 'expires_at' })
+export class Order extends YdbBaseEntity {
+  @YdbPrimaryColumn('Uuid')
+  uuid: string;
+
+  @YdbColumn('Utf8')
+  @YdbEnum({ values: Object.values(StatusEnum), storage: 'Utf8' })
+  status: StatusEnum;
+
+  @YdbCreateDateColumn()
+  @YdbColumn('Timestamp')
+  created_at: Date;
+
+  @YdbColumn('Timestamp')
+  expires_at: Date;
+}
+```
+
+For scripts and tooling the generation is also available programmatically:
+
+```ts
+import { createEntityFileFromSpec } from '@ycforge/ydb-orm';
+
+const created = createEntityFileFromSpec('./src', {
+  className: 'OrderEntity',
+  tableName: 'orders',
+  columns: [
+    { name: 'uuid', type: 'Uuid', primary: true },
+    { name: 'status', type: 'Utf8', enumValues: ['active'], enumStorage: 'Utf8' },
+    { name: 'created_at', type: 'Timestamp', createDate: true },
+  ],
+});
+```
+
+Also exported: `validateEntitySpec`, `renderEntityFile`, `buildDefaultEntitySpec`; the interactive wizard can run over arbitrary streams via `runEntityCreateCommand` / `runEntityCreateWizard`.
+
 ### Readiness check
 
 `migration:check`, `migration:status` and `migration:show` are **read-only**: they only inspect the current state (`DescribeTable` for `ydb_migrations` + a bare `SELECT` of its records; `DescribeTable` for entities) and never change anything — in particular, the bookkeeping table is neither created nor altered (no `CREATE TABLE`/`ALTER TABLE`). States and exit codes:

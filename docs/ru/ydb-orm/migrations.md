@@ -51,6 +51,79 @@ ydb-orm completion bash                   # скрипт shell-автодопо�
 - `--config <path>` — путь к конфигу.
 - `--json` — машинночитаемый вывод для `migration:show`, `migration:status` и `migration:check`.
 
+### Интерактивный entity:create
+
+В TTY команда `ydb-orm entity:create <name>` запускает мастер генерации сущности:
+
+1. имя таблицы (по умолчанию — snake_case от имени сущности, валидируется);
+2. колонки в цикле «имя → тип YDB → PK → encrypted/blind index → enum (значения + хранилище Utf8/Int32)»;
+3. для date-like колонок (`Date`/`Datetime`/`Timestamp`) — автопростановка времени создания/обновления (`@YdbCreateDateColumn`/`@YdbUpdateDateColumn`);
+4. опциональный TTL (`@YdbTtl`, ISO 8601 duration, например `PT2H`) по выбранной date-like колонке;
+5. предпросмотр сгенерированного файла и подтверждение записи.
+
+Гарантии:
+
+- все введённые определения валидируются **до** записи файла: имя таблицы и свойства (идентификаторы `[A-Za-z_][A-Za-z0-9_]*`, без коллизий с членами `YdbBaseEntity`), наличие PK, уникальность колонок и значений enum, типы date-колонок, интервал TTL;
+- существующий файл никогда не перезаписывается: коллизия обнаруживается до старта вопросов и завершается ошибкой;
+- отмена (Ctrl+C) и EOF (Ctrl+D) — чистый выход (exit-код 130), файл не создаётся;
+- никаких обращений к БД и DDL — только локальная генерация файла;
+- вне TTY (CI, скрипты, закрытый stdin) ввод не читается вовсе: детерминированно создаётся шаблон по умолчанию (`uuid` PK типа `Uuid` + колонка `name`), команда не зависает.
+
+Пример сгенерированной сущности:
+
+```ts
+import {
+  YdbBaseEntity,
+  YdbColumn,
+  YdbCreateDateColumn,
+  YdbEntity,
+  YdbEnum,
+  YdbPrimaryColumn,
+  YdbTtl,
+} from '@ycforge/ydb-orm';
+
+export enum StatusEnum {
+  ACTIVE = 'active',
+  NEW_ORDER = 'new_order',
+}
+
+@YdbEntity('orders')
+@YdbTtl({ interval: 'PT30D', column: 'expires_at' })
+export class Order extends YdbBaseEntity {
+  @YdbPrimaryColumn('Uuid')
+  uuid: string;
+
+  @YdbColumn('Utf8')
+  @YdbEnum({ values: Object.values(StatusEnum), storage: 'Utf8' })
+  status: StatusEnum;
+
+  @YdbCreateDateColumn()
+  @YdbColumn('Timestamp')
+  created_at: Date;
+
+  @YdbColumn('Timestamp')
+  expires_at: Date;
+}
+```
+
+Для скриптов и инструментов генерация доступна программно:
+
+```ts
+import { createEntityFileFromSpec } from '@ycforge/ydb-orm';
+
+const created = createEntityFileFromSpec('./src', {
+  className: 'OrderEntity',
+  tableName: 'orders',
+  columns: [
+    { name: 'uuid', type: 'Uuid', primary: true },
+    { name: 'status', type: 'Utf8', enumValues: ['active'], enumStorage: 'Utf8' },
+    { name: 'created_at', type: 'Timestamp', createDate: true },
+  ],
+});
+```
+
+Также экспортируются `validateEntitySpec`, `renderEntityFile`, `buildDefaultEntitySpec`, а интерактивный мастер можно запускать над произвольными потоками через `runEntityCreateCommand` / `runEntityCreateWizard`.
+
 ### Проверка готовности
 
 `migration:check`, `migration:status` и `migration:show` — **read-only**: команды только читают состояние (`DescribeTable` для `ydb_migrations` + голый `SELECT` записей; для сущностей — `DescribeTable`) и ничего не меняют — в частности, таблица учёта не создаётся и не изменяется (никакого `CREATE TABLE`/`ALTER TABLE`). Состояния и exit-коды:
