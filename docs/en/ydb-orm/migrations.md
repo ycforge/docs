@@ -43,6 +43,7 @@ ydb-orm migration:check                   # CI readiness check (non-zero exit wh
 ydb-orm schema:verify                     # verify DB schema against entity metadata
 ydb-orm entity:create UserProfile         # entity ./src/user-profile.entity.ts
 ydb-orm metadata:dump                     # entity metadata as JSON (stdout, no DB)
+ydb-orm entity:diagram                    # Mermaid ER diagram from metadata (stdout/--output, no DB)
 ydb-orm completion bash                   # shell completion script (bash|zsh|fish)
 ```
 
@@ -50,6 +51,7 @@ Options:
 
 - `--dir <path>` — migrations directory (default `./migrations`; for `entity:create` — `./src`).
 - `--config <path>` — path to config.
+- `--output <file>` — output file for `entity:diagram` (existing files are never overwritten).
 - `--json` — machine-readable output for `migration:show`, `migration:status` and `migration:check`.
 
 ### Interactive entity:create
@@ -165,6 +167,40 @@ The format is versioned via the top-level `format`/`version` fields; for every e
 Determinism: entities (by table name), columns, indexes, relations and JSON keys are ordered stably — repeated runs produce byte-for-byte identical output. Inheritance follows rules #92/#107: own `@YdbIndex`/`@YdbTtl` are not inherited, while columns/PK/encryption/eager are. Invalid metadata (a class without `@YdbEntity`, a duplicate table name, a missing primary key, conflicting join tables, an invalid join-column selector, an incompatible TTL) fails the command with a clear error before any output.
 
 External tools can use the programmatic API: `buildMetadataDump(entities)` and the `MetadataDump`, `DumpedEntity` and related types are exported from the package.
+
+### Mermaid ER diagram: entity:diagram
+
+The read-only command renders the same canonical metadata (the same source as `metadata:dump` — `buildMetadataDump`) into a Mermaid ER diagram — **without connecting to the database**: no driver, no executor, no DDL. Valid metadata is required: any configuration error fails the command before the first byte of output.
+
+```bash
+ydb-orm entity:diagram                            # Mermaid text to stdout
+ydb-orm entity:diagram --output docs/schema.mmd   # to a file (overwriting is forbidden)
+```
+
+What the diagram shows:
+
+- every entity from the config `entities` as a block with columns and YDB types; primary-key columns come first **in declaration order** (composite PK order is significant, #89) marked with `PK`;
+- one-to-many / many-to-one pairs over the same join column produce a single `||--o{` line; a unidirectional one-to-many is drawn from the parent side; one-to-one is drawn as `||--o|`; FK columns are marked with `FK`;
+- many-to-many — via the physical join table (#90/#139): a separate block with both columns (`PK, FK`) and two lines "owner → join → inverse side";
+- determinism: block/line ordering is stable and independent of the input list order — repeated runs produce byte-for-byte identical output;
+- safe names: table names and relation labels are always quoted; column names invalid for Mermaid attributes are sanitized, with the original preserved in a comment.
+
+Example output:
+
+```mermaid
+erDiagram
+  "authors" {
+    Uuid uuid PK
+    Utf8 name
+  }
+  "books" {
+    Uuid uuid PK
+    Uuid author_uuid FK
+  }
+  "authors" ||--o{ "books" : "author"
+```
+
+External tools can use the programmatic API: `buildEntityDiagram(entities)` and `writeDiagramFile(path, diagram)` are exported from the package.
 
 ## Shell completion
 
