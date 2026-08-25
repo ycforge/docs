@@ -32,14 +32,14 @@ In the application's root module, register `YdbCoreModule.forRootAsync()` with t
 ```ts
 import { Module } from '@nestjs/common';
 import { YdbCoreModule } from '@ycforge/ydb-orm';
+import { createAuth, authKeyFromFile } from '@ycforge/auth';
 
 @Module({
   imports: [
     YdbCoreModule.forRootAsync({
       useFactory: () => ({
         endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/b1g.../ydb',
-        auth_type: 'auth_key', // 'meta' | 'auth_key' | 'anonymous'
-        authOptions: { authorized_key_path: './authorized_key.json' },
+        auth: createAuth(authKeyFromFile('./authorized_key.json')),
         sync: true, // like synchronize in TypeORM — dev only!
       }),
     }),

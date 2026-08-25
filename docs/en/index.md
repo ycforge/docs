@@ -4,6 +4,14 @@ YCForge is a set of open-source tools for developers. It is not a platform or a 
 
 ## Projects
 
+### auth
+
+Shared authentication for Yandex Cloud APIs and YDB. One `AuthManager` can be reused across `@ycforge/ydb-orm` and `@ycforge/orm-security-providers`.
+
+- [Documentation](auth/index.md)
+- GitHub: [github.com/ycforge/auth](https://github.com/ycforge/auth)
+- npm: [npmjs.com/package/@ycforge/auth](https://www.npmjs.com/package/@ycforge/auth)
+
 ### ydb-orm
 
 TypeORM-like ORM for YDB: Active Record, relations, field encryption with blind index, schema sync, migrations, transactions, and NestJS integration.

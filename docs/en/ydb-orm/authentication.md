@@ -1,55 +1,64 @@
 # Authentication
 
-Authentication is configured with the `auth_type` option in the connection parameters.
+`@ycforge/ydb-orm` does not keep its own authentication strategies. Instead, it accepts a ready-made `AuthManager` from `@ycforge/auth` and adapts it into a `CredentialsProvider` for `@ydbjs/auth`.
 
-## Authentication methods
+If you want to reuse the same auth configuration for YDB and for Yandex Cloud APIs (e.g. KMS), create one `AuthManager` and pass it to both modules.
 
-| Value | Description |
+## Supported strategies
+
+All strategies are configured via `@ycforge/auth`:
+
+| Strategy | Description |
 | --- | --- |
-| `meta` | IAM token from the metadata service (inside Yandex Cloud) |
-| `auth_key` | authorized key JSON of a service account (`authOptions.authorized_key_path`); JWT exchange is implemented with `fetch`, no heavy SDKs |
-| `anonymous` | anonymous access (local YDB) |
+| `iam_token` | Static IAM token |
+| `metadata` | VM metadata service IAM token (Yandex Cloud only) |
+| `auth_key` | Service account authorized key → JWT → IAM token |
+| `access_token` | Static access token (YDB only) |
+| `anonymous` | Anonymous access (local YDB) |
+| `static` | Username/password (YDB only) |
 
-### meta
+See the [@ycforge/auth](../auth/index.md) docs for details on strategies, the capability matrix, and the YDB adapter.
 
-```ts
-{
-  endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/...',
-  auth_type: 'meta',
-  authOptions: {},
-}
-```
+## Passing AuthManager to the module
 
-### auth_key
+The `auth` option accepts a ready `AuthManager`:
 
 ```ts
-{
-  endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/...',
-  auth_type: 'auth_key',
-  authOptions: { authorized_key_path: './authorized_key.json' },
-}
+import { Module } from '@nestjs/common';
+import { YdbCoreModule } from '@ycforge/ydb-orm';
+import { createAuth, authKeyFromFile } from '@ycforge/auth';
+
+@Module({
+  imports: [
+    YdbCoreModule.forRootAsync({
+      useFactory: () => ({
+        endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/.../...',
+        auth: createAuth(authKeyFromFile('./authorized_key.json')),
+        sync: true, // dev only!
+      }),
+    }),
+  ],
+})
+export class AppModule {}
 ```
 
-{% note warning %}
+The ORM internally calls `createYdbCredentialsProvider(auth, YDB_AUTH_USAGE, { endpoint, secure })` from `@ycforge/auth/ydb`. The `YDB_AUTH_USAGE` scope is mandatory — this lets the adapter verify that the chosen strategy is compatible with YDB (for example, `static` cannot be used with `YCLOUD_AUTH_USAGE`).
 
-`authorized_key.json` is a secret file. Do not commit it to the repository or expose its contents in code, logs, or API responses.
+## Passing a ready CredentialsProvider
 
-{% endnote %}
-
-### anonymous
+To pass a custom provider (for example, in tests), use the `credentialsProvider` option:
 
 ```ts
-{
-  endpoint: 'grpc://localhost:2136/local',
-  auth_type: 'anonymous',
-  authOptions: {},
-}
+YdbCoreModule.forRootAsync({
+  useFactory: () => ({
+    endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/.../...',
+    credentialsProvider: myTestProvider,
+  }),
+})
 ```
 
-## Errors
+Setting `credentialsProvider` together with `auth` (or `driverOptions.credentialsProvider`) is a configuration error.
 
-An invalid `auth_type` value → `Invalid YDB auth type` error. A missing `authorized_key_path` with `auth_key` → `Authorized key path not provided` error.
+## Authentication outside NestJS
 
-## Passing a credentials provider
-
-To pass a ready-made credentials provider (for example, in tests), use `createDriver(opts, credentialsProvider)` — see [Standalone usage](standalone.md).
+See [Standalone usage](standalone.md).
