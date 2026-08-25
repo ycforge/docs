@@ -11,6 +11,10 @@ navigation:
 items:
   - name: Главная
     href: index.md
+  - name: auth
+    items:
+      - name: Обзор
+        href: auth/index.md
   - name: ydb-orm
     items:
       - name: Обзор

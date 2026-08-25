@@ -14,26 +14,23 @@ The package requires `@ycforge/ydb-orm` as a peer dependency.
 
 ## Config in forRoot
 
-Pass the provider in the module options under `encryptionProvider`:
+Pass the provider in the module options under `encryptionProvider`. KMS authorization is an IAM token; get it through `@ycforge/auth` and pass a ready `AuthManager`:
 
 ```ts
 import { Module } from '@nestjs/common';
 import { YdbModule } from '@ycforge/ydb-orm';
 import { KmsEncryptionProvider } from '@ycforge/orm-security-providers/yandex-kms';
+import { createAuth, authKeyFromFile } from '@ycforge/auth';
 
 @Module({
   imports: [
     YdbModule.forRoot({
       useFactory: () => ({
         endpoint: process.env.YDB_ENDPOINT!,
-        auth_type: 'auth_key',
-        authOptions: { authorized_key_path: './authorized_key.json' },
+        auth: createAuth(authKeyFromFile('./authorized_key.json')),
         encryptionProvider: new KmsEncryptionProvider({
           keyId: process.env.KMS_KEY_ID!,
-          auth_type: 'auth_key',
-          authOptions: {
-            authorized_key_path: './authorized_key.json',
-          },
+          auth: createAuth(authKeyFromFile('./authorized_key.json')),
         }),
       }),
     }),
@@ -48,13 +45,14 @@ export class AppModule {}
 
 {% endnote %}
 
+To share one `AuthManager` between YDB and KMS, register `@ycforge/auth/nestjs` once and inject it via `YCFORGE_AUTH` — see the example in the [@ycforge/auth](../../../auth/index.md) docs.
+
 ## Options
 
 | Option | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
 | `keyId` | `string` | yes | — | Symmetric KMS key ID |
-| `auth_type` | `'meta' \| 'auth_key' \| 'iam_token'` | yes | — | Auth method |
-| `authOptions` | `KmsAuthOptions` | yes | — | Auth parameters |
+| `auth` | `AuthManager` | yes | — | Ready auth manager from `@ycforge/auth` |
 | `apiEndpoint` | `string` | no | `https://kms.yandex` | KMS API base URL |
 
 {% note warning %}
@@ -65,13 +63,13 @@ The default endpoint is `https://kms.yandex`. The legacy `kms.api.cloud.yandex.n
 
 ## Authentication
 
-The provider exchanges an IAM token through `IamTokenManager` (exported from the same subpath). Three modes are supported:
+The provider obtains an IAM token through the passed `AuthManager` by calling `auth.getToken(YCLOUD_AUTH_USAGE)`. All IAM strategies from `@ycforge/auth` are available:
 
 | Mode | Description | Options |
 |------|-------------|---------|
-| `meta` | VM metadata service (Yandex Cloud only) | — |
-| `auth_key` | Service-account JSON key → JWT → IAM token | `authorized_key_path` |
-| `iam_token` | Static IAM token (no auto-refresh) | `iam_token` |
+| `metadata` | VM metadata service (Yandex Cloud only) | — |
+| `auth_key` | Service-account JSON key → JWT → IAM token | `authKeyFromFile` |
+| `iam_token` | Static IAM token (no auto-refresh) | `token` |
 
 ### auth_key (recommended for local and CI)
 
@@ -87,18 +85,18 @@ yc kms symmetric-key add-access-binding \
 ```ts
 new KmsEncryptionProvider({
   keyId: process.env.KMS_KEY_ID!,
-  auth_type: 'auth_key',
-  authOptions: { authorized_key_path: './authorized_key.json' },
+  auth: createAuth(authKeyFromFile('./authorized_key.json')),
 });
 ```
 
-### meta (production on a VM)
+### metadata (production on a VM)
 
 ```ts
+import { createAuth } from '@ycforge/auth';
+
 new KmsEncryptionProvider({
   keyId: process.env.KMS_KEY_ID!,
-  auth_type: 'meta',
-  authOptions: {},
+  auth: createAuth({ type: 'metadata' }),
 });
 ```
 
@@ -107,8 +105,7 @@ new KmsEncryptionProvider({
 ```ts
 new KmsEncryptionProvider({
   keyId: process.env.KMS_KEY_ID!,
-  auth_type: 'iam_token',
-  authOptions: { iam_token: process.env.IAM_TOKEN! },
+  auth: createAuth({ type: 'iam_token', token: process.env.IAM_TOKEN! }),
 });
 ```
 
