@@ -1,6 +1,6 @@
 # @ycforge/auth
 
-Shared authentication entry point for Yandex Cloud APIs and YDB. The package was extracted from `@ycforge/ydb-orm` and `@ycforge/orm-security-providers` so the same auth configuration can be reused across multiple consumers.
+Shared authentication entry point for Yandex Cloud APIs and YDB. The package was extracted from `@ycforge/yorm` and `@ycforge/orm-security-providers` so the same auth configuration can be reused across multiple consumers.
 
 - Zero runtime dependencies in the core (Node.js builtins + global `fetch`).
 - Token caching with 60-second leeway and single-flight refresh.
@@ -165,11 +165,11 @@ export class SomeService {
 
 The manager is provided under the `YCFORGE_AUTH` symbol.
 
-### Example: sharing one `AuthManager` with `@ycforge/ydb-orm`
+### Example: sharing one `AuthManager` with `@ycforge/yorm`
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbModule } from '@ycforge/ydb-orm';
+import { YdbModule } from '@ycforge/yorm';
 import { YCFORGE_AUTH, YcAuthModule } from '@ycforge/auth/nestjs';
 import type { AuthManager } from '@ycforge/auth';
 

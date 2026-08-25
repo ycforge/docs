@@ -15,51 +15,53 @@ items:
     items:
       - name: Обзор
         href: auth/index.md
-  - name: ydb-orm
+  - name: yorm
     items:
       - name: Обзор
-        href: ydb-orm/index.md
+        href: yorm/index.md
       - name: Установка
-        href: ydb-orm/installation.md
+        href: yorm/installation.md
       - name: Быстрый старт
-        href: ydb-orm/quick-start.md
+        href: yorm/quick-start.md
       - name: Сущности и декораторы
-        href: ydb-orm/entity.md
+        href: yorm/entity.md
       - name: Active Record
-        href: ydb-orm/active-record.md
+        href: yorm/active-record.md
       - name: Репозиторий (DI)
-        href: ydb-orm/repository.md
+        href: yorm/repository.md
       - name: QueryBuilder
-        href: ydb-orm/query-builder.md
+        href: yorm/query-builder.md
       - name: Связи (relations)
-        href: ydb-orm/relations.md
+        href: yorm/relations.md
       - name: Шифрование полей
-        href: ydb-orm/encryption.md
+        href: yorm/encryption.md
       - name: Криптопровайдеры
         items:
           - name: Шифрование
             items:
               - name: Yandex Cloud KMS
-                href: ydb-orm/crypto-providers/encryption/yandex-kms.md
+                href: yorm/crypto-providers/encryption/yandex-kms.md
               - name: Собственный AES-провайдер
-                href: ydb-orm/crypto-providers/encryption/custom-aes.md
+                href: yorm/crypto-providers/encryption/custom-aes.md
           - name: BI-индексы
             items:
               - name: HMAC-SHA256 (hmac-bi)
-                href: ydb-orm/crypto-providers/blind-index/hmac-bi.md
+                href: yorm/crypto-providers/blind-index/hmac-bi.md
       - name: Schema sync
-        href: ydb-orm/schema-sync.md
+        href: yorm/schema-sync.md
       - name: Миграции
-        href: ydb-orm/migrations.md
+        href: yorm/migrations.md
       - name: Транзакции
-        href: ydb-orm/transactions.md
+        href: yorm/transactions.md
       - name: Аутентификация
-        href: ydb-orm/authentication.md
+        href: yorm/authentication.md
       - name: Без NestJS (standalone)
-        href: ydb-orm/standalone.md
+        href: yorm/standalone.md
+      - name: Адаптеры СУБД
+        href: yorm/adapters.md
       - name: Валидация
-        href: ydb-orm/validation.md
+        href: yorm/validation.md
       - name: Справочник API
-        href: ydb-orm/api.md
+        href: yorm/api.md
       - name: Разработка
-        href: ydb-orm/development.md
+        href: yorm/development.md

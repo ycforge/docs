@@ -15,51 +15,53 @@ items:
     items:
       - name: Overview
         href: auth/index.md
-  - name: ydb-orm
+  - name: yorm
     items:
       - name: Overview
-        href: ydb-orm/index.md
+        href: yorm/index.md
       - name: Installation
-        href: ydb-orm/installation.md
+        href: yorm/installation.md
       - name: Quick start
-        href: ydb-orm/quick-start.md
+        href: yorm/quick-start.md
       - name: Entities & decorators
-        href: ydb-orm/entity.md
+        href: yorm/entity.md
       - name: Active Record
-        href: ydb-orm/active-record.md
+        href: yorm/active-record.md
       - name: Repository (DI)
-        href: ydb-orm/repository.md
+        href: yorm/repository.md
       - name: QueryBuilder
-        href: ydb-orm/query-builder.md
+        href: yorm/query-builder.md
       - name: Relations
-        href: ydb-orm/relations.md
+        href: yorm/relations.md
       - name: Field encryption
-        href: ydb-orm/encryption.md
+        href: yorm/encryption.md
       - name: Crypto providers
         items:
           - name: Encryption
             items:
               - name: Yandex Cloud KMS
-                href: ydb-orm/crypto-providers/encryption/yandex-kms.md
+                href: yorm/crypto-providers/encryption/yandex-kms.md
               - name: Custom AES provider
-                href: ydb-orm/crypto-providers/encryption/custom-aes.md
+                href: yorm/crypto-providers/encryption/custom-aes.md
           - name: Blind index
             items:
               - name: HMAC-SHA256 (hmac-bi)
-                href: ydb-orm/crypto-providers/blind-index/hmac-bi.md
+                href: yorm/crypto-providers/blind-index/hmac-bi.md
       - name: Schema sync
-        href: ydb-orm/schema-sync.md
+        href: yorm/schema-sync.md
       - name: Migrations
-        href: ydb-orm/migrations.md
+        href: yorm/migrations.md
       - name: Transactions
-        href: ydb-orm/transactions.md
+        href: yorm/transactions.md
       - name: Authentication
-        href: ydb-orm/authentication.md
+        href: yorm/authentication.md
       - name: Standalone usage
-        href: ydb-orm/standalone.md
+        href: yorm/standalone.md
+      - name: Database adapters
+        href: yorm/adapters.md
       - name: Validation
-        href: ydb-orm/validation.md
+        href: yorm/validation.md
       - name: API reference
-        href: ydb-orm/api.md
+        href: yorm/api.md
       - name: Development
-        href: ydb-orm/development.md
+        href: yorm/development.md

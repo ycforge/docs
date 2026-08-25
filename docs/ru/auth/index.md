@@ -1,6 +1,6 @@
 # @ycforge/auth
 
-Единая точка аутентификации для API Яндекс Облака и YDB. Пакет выделен из `@ycforge/ydb-orm` и `@ycforge/orm-security-providers`, чтобы одну и ту же конфигурацию авторизации можно было переиспользовать в нескольких потребителях.
+Единая точка аутентификации для API Яндекс Облака и YDB. Пакет выделен из `@ycforge/yorm` и `@ycforge/orm-security-providers`, чтобы одну и ту же конфигурацию авторизации можно было переиспользовать в нескольких потребителях.
 
 - Нулевое количество runtime-зависимостей в ядре (Node.js builtins + глобальный `fetch`).
 - Кэширование токенов с запасом 60 секунд и single-flight обновлением.
@@ -165,11 +165,11 @@ export class SomeService {
 
 Менеджер предоставляется под символом `YCFORGE_AUTH`.
 
-### Пример: один `AuthManager` для `@ycforge/ydb-orm`
+### Пример: один `AuthManager` для `@ycforge/yorm`
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbModule } from '@ycforge/ydb-orm';
+import { YdbModule } from '@ycforge/yorm';
 import { YCFORGE_AUTH, YcAuthModule } from '@ycforge/auth/nestjs';
 import type { AuthManager } from '@ycforge/auth';
 
