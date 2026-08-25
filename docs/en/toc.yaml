@@ -11,6 +11,10 @@ navigation:
 items:
   - name: Home
     href: index.md
+  - name: auth
+    items:
+      - name: Overview
+        href: auth/index.md
   - name: ydb-orm
     items:
       - name: Overview

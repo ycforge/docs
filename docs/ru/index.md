@@ -4,6 +4,14 @@ YCForge — набор open-source инструментов для разраб�
 
 ## Проекты
 
+### auth
+
+Единая авторизация для API Яндекс Облака и YDB. Один `AuthManager` можно переиспользовать в `@ycforge/ydb-orm` и `@ycforge/orm-security-providers`.
+
+- [Документация](auth/index.md)
+- GitHub: [github.com/ycforge/auth](https://github.com/ycforge/auth)
+- npm: [npmjs.com/package/@ycforge/auth](https://www.npmjs.com/package/@ycforge/auth)
+
 ### ydb-orm
 
 TypeORM-like ORM для YDB: Active Record, связи (relations), шифрование полей с blind index, schema sync, миграции, транзакции и интеграция с NestJS.
