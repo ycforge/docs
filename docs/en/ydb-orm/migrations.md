@@ -42,6 +42,7 @@ ydb-orm migration:show                    # migration status (alias — migratio
 ydb-orm migration:check                   # CI readiness check (non-zero exit when not ready)
 ydb-orm schema:verify                     # verify DB schema against entity metadata
 ydb-orm entity:create UserProfile         # entity ./src/user-profile.entity.ts
+ydb-orm metadata:dump                     # entity metadata as JSON (stdout, no DB)
 ydb-orm completion bash                   # shell completion script (bash|zsh|fish)
 ```
 
@@ -144,6 +145,26 @@ Interrupted and modified migrations are explicitly not treated as successfully a
 Text mode: summary or migration list goes to stdout, problems and the schema diff go to stderr; the final line starts with `Up to date:` or `Not ready:`. Diff colors follow the real output stream and are disabled outside a TTY and by `NO_COLOR`. For CI parsing use `--json`: the whole report is printed to stdout with a stable schema — `ready`, `state`, `states`, `exitCode`, the `pending`/`interrupted`/`modified`/`orphaned` lists, the `migrations` array with per-migration flags, and the `schema` block with found discrepancies.
 
 `migration:generate` and `schema:verify` print a colored diff of "entities vs database" discrepancies, grouped by table. Colors are disabled when output is not a TTY or via the `NO_COLOR` environment variable.
+
+### Metadata export: metadata:dump
+
+The read-only command dumps metadata of the entities from the config (`entities`, same as for `migration:generate`) as deterministic JSON — **without connecting to the database**: no driver, no executor, no DDL is involved. The command is JSON-only by nature: the whole dump goes to stdout, there is no separate text mode.
+
+```bash
+ydb-orm metadata:dump
+```
+
+The format is versioned via the top-level `format`/`version` fields; for every entity it includes:
+
+- class and table names; columns with YDB types (including synthetic `{field}_bi` blind-index columns) and the primary key with its column order;
+- relations of all types: relation type, target entity/table, join column, inverse property (`inverseProperty`), for many-to-many — a reference to the join table; physical join-table descriptions are listed separately under `joinTables` (columns and their types derived from the actual primary keys, plus the owning side);
+- indexes (name, columns with their order preserved, unique) and TTL (column, ISO 8601 interval, unit);
+- encryption without secrets: only declarative field flags (blind index + the `_bi` column name, lazy, aadOverride) and AAD primary-key fields; providers, keys and runtime material are never exported;
+- enum metadata (values in semantic order, `Utf8`/`Int32` storage), JSON columns and eager relations.
+
+Determinism: entities (by table name), columns, indexes, relations and JSON keys are ordered stably — repeated runs produce byte-for-byte identical output. Inheritance follows rules #92/#107: own `@YdbIndex`/`@YdbTtl` are not inherited, while columns/PK/encryption/eager are. Invalid metadata (a class without `@YdbEntity`, a duplicate table name, a missing primary key, conflicting join tables, an invalid join-column selector, an incompatible TTL) fails the command with a clear error before any output.
+
+External tools can use the programmatic API: `buildMetadataDump(entities)` and the `MetadataDump`, `DumpedEntity` and related types are exported from the package.
 
 ## Shell completion
 
