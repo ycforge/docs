@@ -36,6 +36,7 @@ yarn add @nestjs/common @nestjs/core reflect-metadata rxjs
 | Репозиторий | `getOrCreateRepository(Entity)` | `@InjectRepository(Entity)` |
 | Транзакции | `new YdbTransactionManager(executor)` | инжектируемый `YdbTransactionManager` |
 | Schema sync | `new YdbSchemaSyncer(executor)` | `@Inject(YDB_SCHEMA_SYNC)` |
+| Валидация | `entity.setValidationProvider(...)` | опция модуля `validationProvider` |
 
 ## Пример: минимальное NestJS-приложение
 
@@ -67,4 +68,7 @@ export class AppModule {}
 - [Транзакции (NestJS)](transactions.md) — инжектируемый менеджер транзакций
 - [Schema sync (NestJS)](schema-sync.md) — DI-инъекция schema syncer
 - [Шифрование (NestJS)](encryption.md) — передача провайдеров через опции модуля
+- [Валидация (NestJS)](validation.md) — провайдер валидации через опции модуля
+- [Логирование (NestJS)](logging.md) — логирование запросов с Nest Logger
+- [AbortSignal (NestJS)](abort-signal.md) — отмена в скоупе HTTP-запроса
 - [Аутентификация (NestJS)](authentication.md) — auth через опции модуля

@@ -36,6 +36,7 @@ yarn add @nestjs/common @nestjs/core reflect-metadata rxjs
 | Repository | `getOrCreateRepository(Entity)` | `@InjectRepository(Entity)` |
 | Transaction | `new YdbTransactionManager(executor)` | injected `YdbTransactionManager` |
 | Schema sync | `new YdbSchemaSyncer(executor)` | `@Inject(YDB_SCHEMA_SYNC)` |
+| Validation | `entity.setValidationProvider(...)` | `validationProvider` module option |
 
 ## Example: minimal NestJS app
 
@@ -67,4 +68,7 @@ export class AppModule {}
 - [NestJS transactions](transactions.md) — injected transaction manager
 - [NestJS schema sync](schema-sync.md) — DI schema syncer
 - [NestJS encryption](encryption.md) — passing providers via module options
+- [NestJS validation](validation.md) — validation provider via module options
+- [NestJS logging](logging.md) — query logging with Nest Logger
+- [NestJS AbortSignal](abort-signal.md) — request-scoped cancellation
 - [NestJS authentication](authentication.md) — auth via module options

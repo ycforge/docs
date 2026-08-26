@@ -53,12 +53,18 @@ items:
         href: ydb-orm/migrations.md
       - name: Транзакции
         href: ydb-orm/transactions.md
+      - name: AbortSignal
+        href: ydb-orm/abort-signal.md
       - name: Аутентификация
         href: ydb-orm/authentication.md
       - name: Standalone-использование
         href: ydb-orm/standalone.md
       - name: Валидация
         href: ydb-orm/validation.md
+      - name: CLI
+        href: ydb-orm/cli.md
+      - name: Особые случаи
+        href: ydb-orm/edge-cases.md
       - name: Справочник API
         href: ydb-orm/api.md
       - name: NestJS-адаптер
@@ -75,6 +81,12 @@ items:
             href: ydb-orm/nest/schema-sync.md
           - name: Шифрование
             href: ydb-orm/nest/encryption.md
+          - name: Валидация
+            href: ydb-orm/nest/validation.md
+          - name: Логирование
+            href: ydb-orm/nest/logging.md
+          - name: AbortSignal
+            href: ydb-orm/nest/abort-signal.md
           - name: Аутентификация
             href: ydb-orm/nest/authentication.md
       - name: Разработка
