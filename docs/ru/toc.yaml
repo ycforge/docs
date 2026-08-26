@@ -27,7 +27,7 @@ items:
         href: ydb-orm/entity.md
       - name: Active Record
         href: ydb-orm/active-record.md
-      - name: Репозиторий (DI)
+      - name: Репозиторий
         href: ydb-orm/repository.md
       - name: QueryBuilder
         href: ydb-orm/query-builder.md
@@ -55,11 +55,27 @@ items:
         href: ydb-orm/transactions.md
       - name: Аутентификация
         href: ydb-orm/authentication.md
-      - name: Без NestJS (standalone)
+      - name: Standalone-использование
         href: ydb-orm/standalone.md
       - name: Валидация
         href: ydb-orm/validation.md
       - name: Справочник API
         href: ydb-orm/api.md
+      - name: NestJS-адаптер
+        items:
+          - name: Обзор
+            href: ydb-orm/nest/overview.md
+          - name: Быстрый старт
+            href: ydb-orm/nest/quick-start.md
+          - name: Инъекция репозитория
+            href: ydb-orm/nest/repository.md
+          - name: Транзакции
+            href: ydb-orm/nest/transactions.md
+          - name: Schema sync
+            href: ydb-orm/nest/schema-sync.md
+          - name: Шифрование
+            href: ydb-orm/nest/encryption.md
+          - name: Аутентификация
+            href: ydb-orm/nest/authentication.md
       - name: Разработка
         href: ydb-orm/development.md

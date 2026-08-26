@@ -4,12 +4,17 @@
 
 | Export | Type | Description |
 | --- | --- | --- |
-| `YdbCoreModule` | class | NestJS root module: `forRootAsync()` |
-| `YdbOrmModule` | class | NestJS module: `forRoot()`, `forFeature([...])` |
 | `YdbBaseEntity` | class | Active Record base entity class |
 | `YdbQueryBuilder` | class | chainable query builder |
-| `YdbRepository<T>` | class | DI repository for an entity |
+| `YdbRepository<T>` | class | repository for an entity |
 | `YdbEntityManager` | class | repository factory |
+
+## NestJS modules
+
+| Export | Type | Description |
+| --- | --- | --- |
+| `YdbCoreModule` | class | NestJS root module: `forRootAsync()` |
+| `YdbOrmModule` | class | NestJS module: `forRoot()`, `forFeature([...])` |
 
 ## Decorators
 
@@ -59,11 +64,11 @@ Instance methods: `loadRelations([...])`, `decryptField(name)`, `decryptLazyFiel
 
 | Export | Description |
 | --- | --- |
-| `YdbRepository<T>` | DI repository for an entity (CRUD + relations) |
+| `YdbRepository<T>` | repository for an entity (CRUD + relations) |
 | `YdbEntityManager` | repository factory (`getRepository(Entity)`) |
-| `InjectRepository(Entity)` | decorator to inject a repository in NestJS |
-| `getRepositoryToken(Entity)` | DI token for a repository |
 | `getOrCreateRepository(Entity)` | get/create repository from runtime deps |
+| `InjectRepository(Entity)` | decorator to inject a repository in NestJS |
+| `getRepositoryToken(Entity)` | DI token for a repository (NestJS) |
 
 ## Persistence / Relations (ORM core)
 
@@ -93,7 +98,7 @@ Instance methods: `loadRelations([...])`, `decryptField(name)`, `decryptLazyFiel
 | `RelationsDeps` | relations dependencies (encryption providers) |
 | `LifecycleHooks` | lifecycle hook metadata type |
 
-## DI tokens
+## DI tokens (NestJS)
 
 | Token | Description |
 | --- | --- |

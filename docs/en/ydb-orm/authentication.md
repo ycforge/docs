@@ -19,27 +19,20 @@ All strategies are configured via `@ycforge/auth`:
 
 See the [@ycforge/auth](../auth/index.md) docs for details on strategies, the capability matrix, and the YDB adapter.
 
-## Passing AuthManager to the module
+## Standalone usage
 
-The `auth` option accepts a ready `AuthManager`:
+Pass the `auth` option to `createDriver`:
 
 ```ts
-import { Module } from '@nestjs/common';
-import { YdbCoreModule } from '@ycforge/ydb-orm';
+import { createDriver, createExecutor } from '@ycforge/ydb-orm';
 import { createAuth, authKeyFromFile } from '@ycforge/auth';
 
-@Module({
-  imports: [
-    YdbCoreModule.forRootAsync({
-      useFactory: () => ({
-        endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/.../...',
-        auth: createAuth(authKeyFromFile('./authorized_key.json')),
-        sync: true, // dev only!
-      }),
-    }),
-  ],
-})
-export class AppModule {}
+const driver = await createDriver({
+  endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/.../...',
+  auth: createAuth(authKeyFromFile('./authorized_key.json')),
+});
+
+const executor = createExecutor(driver);
 ```
 
 The ORM internally calls `createYdbCredentialsProvider(auth, YDB_AUTH_USAGE, { endpoint, secure })` from `@ycforge/auth/ydb`. The `YDB_AUTH_USAGE` scope is mandatory — this lets the adapter verify that the chosen strategy is compatible with YDB (for example, `static` cannot be used with `YCLOUD_AUTH_USAGE`).
@@ -49,16 +42,14 @@ The ORM internally calls `createYdbCredentialsProvider(auth, YDB_AUTH_USAGE, { e
 To pass a custom provider (for example, in tests), use the `credentialsProvider` option:
 
 ```ts
-YdbCoreModule.forRootAsync({
-  useFactory: () => ({
-    endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/.../...',
-    credentialsProvider: myTestProvider,
-  }),
-})
+const driver = await createDriver({
+  endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/.../...',
+  credentialsProvider: myTestProvider,
+});
 ```
 
-Setting `credentialsProvider` together with `auth` (or `driverOptions.credentialsProvider`) is a configuration error.
+Setting `credentialsProvider` together with `auth` is a configuration error.
 
-## Authentication outside NestJS
+## Next steps
 
-See [Standalone usage](standalone.md).
+- [NestJS authentication](nest/authentication.md) — if you use NestJS, see how to pass `auth` via module options

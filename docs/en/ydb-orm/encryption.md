@@ -5,24 +5,22 @@ The ORM supports encrypting individual fields with the ability to search encrypt
 ## How it works
 
 1. A field is marked with `@YdbEncrypted({ blindIndex })`.
-2. Before writing, the ORM calls the encryption provider: `encrypt(plaintext, aad, context)` → `Uint8Array`.
+2. Before writing, the ORM calls the encryption provider: `encrypt(plaintext, aad, context)` -> `Uint8Array`.
 3. The ciphertext is stored in a `Bytes` column (raw bytes — no base64, ~33% savings compared to `Utf8`).
 4. If `blindIndex: true`, a deterministic hash is also computed and stored in the synthetic `{field}_bi` column (`Utf8`).
-5. After reading, the ORM calls `decrypt(ciphertext, aad, context)` → plaintext.
+5. After reading, the ORM calls `decrypt(ciphertext, aad, context)` -> plaintext.
 
 ## Configuring providers
 
-Providers are passed in the module options:
+Providers are passed via `configureEntities`:
 
 ```ts
-YdbCoreModule.forRootAsync({
-  useFactory: () => ({
-    endpoint: '...',
-    auth_type: 'auth_key',
-    authOptions: { authorized_key_path: './authorized_key.json' },
-    encryptionProvider: myEncryptionProvider,
-    blindIndexProvider: myBlindIndexProvider,
-  }),
+import { configureEntities } from '@ycforge/ydb-orm';
+
+configureEntities([UserEntity], {
+  executor,
+  encryptionProvider: myEncryptionProvider,
+  blindIndexProvider: myBlindIndexProvider,
 });
 ```
 
@@ -169,3 +167,7 @@ To explicitly override AAD, use `aadOverride` in `@YdbEncrypted({ aadOverride: '
 - The entity object stores **plaintext**. The ORM encrypts a copy before UPSERT and does not mutate the original object — otherwise a repeated `save()` would re-encrypt the ciphertext.
 - `null` / `undefined` values are not encrypted.
 - On read, the ORM decrypts fields automatically; synthetic `{field}_bi` columns do not appear on the instance and are excluded from `toJSON()`.
+
+## Next steps
+
+- [NestJS encryption](nest/encryption.md) — if you use NestJS, see how to pass providers via module options

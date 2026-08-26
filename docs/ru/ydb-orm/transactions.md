@@ -1,43 +1,37 @@
 # Транзакции
 
-ORM предоставляет менеджер транзакций `YdbTransactionManager`, который экспортируется корневым модулем NestJS-интеграции.
+ORM предоставляет `YdbTransactionManager` для атомарных операций. Транзакции гарантируют, что несколько записей либо все применятся, либо ни одна.
 
 ## Использование
 
 ```ts
-import { Injectable } from '@nestjs/common';
 import { YdbTransactionManager } from '@ycforge/ydb-orm';
 import type { QueryOptions } from '@ycforge/ydb-orm';
 import { UserEntity } from './user.entity';
 
-@Injectable()
-export class UsersService {
-  constructor(private readonly txManager: YdbTransactionManager) {}
+const txManager = new YdbTransactionManager(executor);
 
-  async transfer() {
-    await this.txManager.runInTransaction(async (trx) => {
-      const opts: QueryOptions = { trx };
+await txManager.runInTransaction(async (trx) => {
+  const opts: QueryOptions = { trx };
 
-      const from = await UserEntity.find({ uuid: fromId }, opts);
-      const to = await UserEntity.find({ uuid: toId }, opts);
+  const from = await UserEntity.find({ uuid: fromId }, opts);
+  const to = await UserEntity.find({ uuid: toId }, opts);
 
-      from.balance -= 100;
-      to.balance += 100;
+  from.balance -= 100;
+  to.balance += 100;
 
-      await UserEntity.save(from, opts);
-      await UserEntity.save(to, opts);
-      // Обе записи применятся атомарно: либо обе, либо ни одной
-    });
-  }
-}
+  await UserEntity.save(from, opts);
+  await UserEntity.save(to, opts);
+  // Обе записи применяются атомарно: либо обе, либо ни одна
+});
 ```
 
-Внутри колбэка `trx` — executor транзакции. Он передаётся во все методы сущностей через `{ trx }` в `QueryOptions`. Так же через `options({ trx })` можно выполнить [QueryBuilder](query-builder.md).
+Внутри колбэка `trx` — executor транзакции. Он передаётся во все методы сущностей через `{ trx }` в `QueryOptions`. Также можно использовать [QueryBuilder](query-builder.md) через `options({ trx })`.
 
 ## QueryBuilder в транзакции
 
 ```ts
-await this.txManager.runInTransaction(async (trx) => {
+await txManager.runInTransaction(async (trx) => {
   const posts = await PostEntity.query()
     .where({ author_uuid: userId })
     .options({ trx })
@@ -47,12 +41,16 @@ await this.txManager.runInTransaction(async (trx) => {
 
 ## Вложенные транзакции
 
-Вызов `runInTransaction` внутри транзакции выполняет запросы в рамках той же транзакции (YDB-транзакции не вкладываются).
+Вызов `runInTransaction` внутри транзакции выполняет запросы в той же транзакции (транзакции YDB не вкладываются).
 
 ## Массовые операции
 
-`insertMany`, `updateBy` и `deleteBy` тоже принимают `{ trx }` и выполняются в транзакции.
+`insertMany`, `updateBy` и `deleteBy` также принимают `{ trx }` и выполняются внутри транзакции.
 
-## Что транзакция не покрывает
+## Что не покрывают транзакции
 
 DDL (CREATE TABLE, ALTER TABLE, DROP TABLE) в YDB не транзакционен — выполнение миграций последовательное. Используйте [миграции](migrations.md) для изменения схемы.
+
+## Следующие шаги
+
+- [Транзакции (NestJS)](nest/transactions.md) — если вы используете NestJS, см. инжектируемый паттерн

@@ -4,12 +4,17 @@
 
 | Экспорт | Тип | Описание |
 | --- | --- | --- |
-| `YdbCoreModule` | класс | корневой модуль NestJS: `forRootAsync()` |
-| `YdbOrmModule` | класс | модуль NestJS: `forRoot()`, `forFeature([...])` |
 | `YdbBaseEntity` | класс | базовый класс Active Record сущности |
 | `YdbQueryBuilder` | класс | цепочный построитель запросов |
-| `YdbRepository<T>` | класс | DI-репозиторий для сущности |
+| `YdbRepository<T>` | класс | репозиторий для сущности |
 | `YdbEntityManager` | класс | фабрика репозиториев |
+
+## Модули NestJS
+
+| Экспорт | Тип | Описание |
+| --- | --- | --- |
+| `YdbCoreModule` | класс | корневой модуль NestJS: `forRootAsync()` |
+| `YdbOrmModule` | класс | модуль NestJS: `forRoot()`, `forFeature([...])` |
 
 ## Декораторы
 
@@ -59,11 +64,11 @@
 
 | Экспорт | Описание |
 | --- | --- |
-| `YdbRepository<T>` | DI-репозиторий сущности (CRUD + relations) |
+| `YdbRepository<T>` | репозиторий сущности (CRUD + relations) |
 | `YdbEntityManager` | фабрика репозиториев (`getRepository(Entity)`) |
-| `InjectRepository(Entity)` | декоратор инъекции репозитория в NestJS |
-| `getRepositoryToken(Entity)` | DI-токен репозитория |
 | `getOrCreateRepository(Entity)` | получить/создать репозиторий из runtime deps |
+| `InjectRepository(Entity)` | декоратор инъекции репозитория в NestJS |
+| `getRepositoryToken(Entity)` | DI-токен репозитория (NestJS) |
 
 ## Persistence / Relations (ядро ORM)
 
@@ -93,7 +98,7 @@
 | `RelationsDeps` | зависимости relations (провайдеры шифрования) |
 | `LifecycleHooks` | тип метаданных lifecycle-хуков |
 
-## DI-токены
+## DI-токены (NestJS)
 
 | Токен | Описание |
 | --- | --- |
