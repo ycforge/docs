@@ -6,8 +6,8 @@ The ORM provides the transaction manager `YdbTransactionManager`, exported by th
 
 ```ts
 import { Injectable } from '@nestjs/common';
-import { YdbTransactionManager } from '@ycforge/yorm';
-import type { QueryOptions } from '@ycforge/yorm';
+import { YdbTransactionManager } from '@ycforge/ydb-orm';
+import type { QueryOptions } from '@ycforge/ydb-orm';
 import { UserEntity } from './user.entity';
 
 @Injectable()

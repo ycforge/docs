@@ -8,13 +8,13 @@
 ## Installing the package
 
 ```bash
-yarn add @ycforge/yorm
+yarn add @ycforge/ydb-orm
 ```
 
 or
 
 ```bash
-npm install @ycforge/yorm
+npm install @ycforge/ydb-orm
 ```
 
 ## Peer dependencies
@@ -54,7 +54,7 @@ The mandatory options for decorators are `experimentalDecorators` and `emitDecor
 ## Verify the installation
 
 ```bash
-node -e "import('@ycforge/yorm').then(m => console.log(Object.keys(m).length + ' exports'))"
+node -e "import('@ycforge/ydb-orm').then(m => console.log(Object.keys(m).length + ' exports'))"
 ```
 
 If the command prints the number of exports, the package is installed correctly.

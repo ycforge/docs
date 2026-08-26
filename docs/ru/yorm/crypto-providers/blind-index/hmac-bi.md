@@ -16,7 +16,7 @@ Yandex Cloud KMS не предоставляет нативной хеш-фун�
 yarn add @ycforge/orm-security-providers
 ```
 
-Пакет требует `@ycforge/yorm` как peer-зависимость.
+Пакет требует `@ycforge/ydb-orm` как peer-зависимость.
 
 ## Опции
 
@@ -42,12 +42,12 @@ openssl rand -base64 32
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbModule } from '@ycforge/yorm';
+import { YdbOrmModule } from '@ycforge/ydb-orm';
 import { KmsBlindIndexProvider } from '@ycforge/orm-security-providers/hmac-bi';
 
 @Module({
   imports: [
-    YdbModule.forRoot({
+    YdbOrmModule.forRoot({
       useFactory: () => ({
         endpoint: process.env.YDB_ENDPOINT!,
         auth_type: 'auth_key',
@@ -68,7 +68,7 @@ export class AppModule {}
 Пометите поле `@YdbEncrypted({ blindIndex: true })` — ORM сохраняет хеш в synthetic-колонку `{field}_bi` (`Utf8`):
 
 ```ts
-import { YdbEntity, YdbBaseEntity, YdbColumn, YdbPrimaryColumn, YdbEncrypted } from '@ycforge/yorm';
+import { YdbEntity, YdbBaseEntity, YdbColumn, YdbPrimaryColumn, YdbEncrypted } from '@ycforge/ydb-orm';
 
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {
@@ -85,7 +85,7 @@ export class UserEntity extends YdbBaseEntity {
 ```ts
 // NestJS: добавьте сущность в forFeature
 @Module({
-  imports: [YdbModule.forFeature([UserEntity])],
+  imports: [YdbOrmModule.forFeature([UserEntity])],
 })
 export class UsersModule {}
 

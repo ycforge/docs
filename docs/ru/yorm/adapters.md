@@ -7,7 +7,7 @@
 ## Интерфейс OrmAdapter
 
 ```ts
-import type { OrmAdapter } from '@ycforge/yorm';
+import type { OrmAdapter } from '@ycforge/ydb-orm';
 ```
 
 Поля адаптера:
@@ -32,8 +32,8 @@ import type { OrmAdapter } from '@ycforge/yorm';
 
 ```ts
 import { createAuth } from '@ycforge/auth';
-import { YdbCoreModule } from '@ycforge/yorm';
-import { ydbAdapter } from '@ycforge/yorm/ydb';
+import { YdbCoreModule } from '@ycforge/ydb-orm';
+import { ydbAdapter } from '@ycforge/ydb-orm/ydb';
 
 @Module({
   imports: [
@@ -51,12 +51,12 @@ export class AppModule {}
 
 Свой адаптер (например, обёртка с метриками или stub для тестов) передаётся тем же полем `adapter`.
 
-## Subpath-экспорт `@ycforge/yorm/ydb`
+## Subpath-экспорт `@ycforge/ydb-orm/ydb`
 
 Реализация YDB-адаптера доступна отдельным subpath-импортом:
 
 ```ts
-import { ydbAdapter, createDriver, createExecutor, mapToYdb } from '@ycforge/yorm/ydb';
+import { ydbAdapter, createDriver, createExecutor, mapToYdb } from '@ycforge/ydb-orm/ydb';
 ```
 
 Отсюда же экспортируются `YdbSchemaSyncer`, DDL-генераторы (`generateCreateTableYql` и др.), retry-утилиты (`runWithRetry`, `withRetryPolicy`, `resolveYdbRetryPolicy`) и связанные типы. Всё это доступно и из корня пакета — subpath нужен, чтобы явно работать с YDB-адаптером.

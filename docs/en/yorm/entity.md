@@ -277,7 +277,7 @@ import {
   BeforeInsert,
   AfterFind,
   BeforeRemove,
-} from '@ycforge/yorm';
+} from '@ycforge/ydb-orm';
 
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {

@@ -1,6 +1,6 @@
 # Authentication
 
-`@ycforge/yorm` does not keep its own authentication strategies. Instead, it accepts a ready-made `AuthManager` from `@ycforge/auth` and adapts it into a `CredentialsProvider` for `@ydbjs/auth`.
+`@ycforge/ydb-orm` does not keep its own authentication strategies. Instead, it accepts a ready-made `AuthManager` from `@ycforge/auth` and adapts it into a `CredentialsProvider` for `@ydbjs/auth`.
 
 If you want to reuse the same auth configuration for YDB and for Yandex Cloud APIs (e.g. KMS), create one `AuthManager` and pass it to both modules.
 
@@ -25,7 +25,7 @@ The `auth` option accepts a ready `AuthManager`:
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbCoreModule } from '@ycforge/yorm';
+import { YdbCoreModule } from '@ycforge/ydb-orm';
 import { createAuth, authKeyFromFile } from '@ycforge/auth';
 
 @Module({

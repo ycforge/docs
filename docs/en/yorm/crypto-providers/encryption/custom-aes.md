@@ -6,7 +6,7 @@ The ORM only requires a provider that implements `YdbEncryptionProvider`. Nothin
 
 ```ts
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
-import type { YdbEncryptionProvider, YdbEncryptionContext } from '@ycforge/yorm';
+import type { YdbEncryptionProvider, YdbEncryptionContext } from '@ycforge/ydb-orm';
 
 export class AesGcmEncryptionProvider implements YdbEncryptionProvider {
   private readonly key: Buffer;
@@ -50,13 +50,13 @@ Pass the key via an environment variable — do not hardcode it in code or commi
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbModule } from '@ycforge/yorm';
+import { YdbOrmModule } from '@ycforge/ydb-orm';
 import { KmsBlindIndexProvider } from '@ycforge/orm-security-providers/hmac-bi';
 import { AesGcmEncryptionProvider } from './aes-gcm-encryption.provider';
 
 @Module({
   imports: [
-    YdbModule.forRoot({
+    YdbOrmModule.forRoot({
       useFactory: () => ({
         endpoint: process.env.YDB_ENDPOINT!,
         auth_type: 'auth_key',
@@ -75,7 +75,7 @@ export class AppModule {}
 ## Usage with entities
 
 ```ts
-import { YdbEntity, YdbBaseEntity, YdbColumn, YdbPrimaryColumn, YdbEncrypted } from '@ycforge/yorm';
+import { YdbEntity, YdbBaseEntity, YdbColumn, YdbPrimaryColumn, YdbEncrypted } from '@ycforge/ydb-orm';
 
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {

@@ -40,7 +40,7 @@ The `YDB_SCHEMA_SYNC` provider is exported by the root module. You can verify or
 
 ```ts
 import { Inject, Injectable } from '@nestjs/common';
-import { YDB_SCHEMA_SYNC, YdbSchemaSyncer } from '@ycforge/yorm';
+import { YDB_SCHEMA_SYNC, YdbSchemaSyncer } from '@ycforge/ydb-orm';
 import { UserEntity, PostEntity } from './entities';
 
 @Injectable()
@@ -73,7 +73,7 @@ import {
   generateCreateTableYql,
   generateAddColumnsYql,
   checkTableSchema,
-} from '@ycforge/yorm';
+} from '@ycforge/ydb-orm';
 
 const expected = buildExpectedTableSchema(UserEntity);
 const createYql = generateCreateTableYql(expected);

@@ -1,6 +1,6 @@
-# yorm
+# ydb-orm
 
-**@ycforge/yorm** — TypeORM-like ORM для [YDB (Yandex Database)](https://ydb.tech/) на TypeScript.
+**@ycforge/ydb-orm** — TypeORM-like ORM для [YDB (Yandex Database)](https://ydb.tech/) на TypeScript.
 
 Библиотека предоставляет Active Record, отношения (relations), шифрование полей с blind index, schema sync, транзакции и интеграцию с NestJS.
 
@@ -18,12 +18,12 @@
 - **Схема БД** — `schema sync` (аналог `synchronize` в TypeORM) и генераторы DDL для миграций.
 - **Миграции** — классы с `up`/`down`, CLI-команды `migration:create|generate|run|revert|show`.
 - **Транзакции** — `YdbTransactionManager.runInTransaction()`.
-- **NestJS-интеграция** — `YdbCoreModule.forRootAsync()` + `YdbModule.forFeature()`.
+- **NestJS-интеграция** — `YdbCoreModule.forRootAsync()` + `YdbOrmModule.forFeature()`.
 - **Использование без NestJS** — `createDriver` / `createExecutor` / `configureEntities` для скриптов и CLI.
 
 ## Принципы
 
-- **Удобство** — API в стиле TypeORM: если вы знаете TypeORM, yorm покажется знакомым.
+- **Удобство** — API в стиле TypeORM: если вы знаете TypeORM, ydb-orm покажется знакомым.
 - **Минимализм** — оптимизация по памяти и CPU.
 - **Функциональность** — покрытие типовых сценариев работы с YDB из коробки.
 
@@ -35,8 +35,8 @@
 
 ## Репозиторий
 
-- GitHub: [github.com/ycforge/yorm](https://github.com/ycforge/yorm)
-- npm: [npmjs.com/package/@ycforge/yorm](https://www.npmjs.com/package/@ycforge/yorm)
+- GitHub: [github.com/ycforge/ydb-orm](https://github.com/ycforge/ydb-orm)
+- npm: [npmjs.com/package/@ycforge/ydb-orm](https://www.npmjs.com/package/@ycforge/ydb-orm)
 - Лицензия: MIT
 
 ## С чего начать

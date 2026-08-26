@@ -1,6 +1,6 @@
 # Аутентификация
 
-`@ycforge/yorm` не хранит собственных способов авторизации. Вместо этого он принимает готовый `AuthManager` из пакета `@ycforge/auth` и сам адаптирует его в `CredentialsProvider` для `@ydbjs/auth`.
+`@ycforge/ydb-orm` не хранит собственных способов авторизации. Вместо этого он принимает готовый `AuthManager` из пакета `@ycforge/auth` и сам адаптирует его в `CredentialsProvider` для `@ydbjs/auth`.
 
 Если вам нужно переиспользовать одну конфигурацию авторизации для YDB и для Yandex Cloud API (например, KMS), создайте `AuthManager` один раз и передайте его в оба модуля.
 
@@ -25,7 +25,7 @@
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbCoreModule } from '@ycforge/yorm';
+import { YdbCoreModule } from '@ycforge/ydb-orm';
 import { createAuth, authKeyFromFile } from '@ycforge/auth';
 
 @Module({

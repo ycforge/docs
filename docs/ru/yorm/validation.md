@@ -7,7 +7,7 @@ ORM может валидировать сущности перед запись
 Провайдер валидации устанавливается на сущность через `setValidationProvider`. Встроенный `ClassValidatorProvider` использует `class-validator` (опциональная peer-зависимость).
 
 ```ts
-import { ClassValidatorProvider } from '@ycforge/yorm';
+import { ClassValidatorProvider } from '@ycforge/ydb-orm';
 import { UserEntity } from './user.entity';
 
 UserEntity.setValidationProvider(new ClassValidatorProvider());
@@ -25,7 +25,7 @@ UserEntity.setValidationProvider(new ClassValidatorProvider({ groups: ['create']
 
 ```ts
 import { IsEmail, IsNotEmpty, Length, validate } from 'class-validator';
-import { YdbBaseEntity, YdbEntity, YdbColumn, YdbPrimaryColumn } from '@ycforge/yorm';
+import { YdbBaseEntity, YdbEntity, YdbColumn, YdbPrimaryColumn } from '@ycforge/ydb-orm';
 
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {
@@ -48,7 +48,7 @@ export class UserEntity extends YdbBaseEntity {
 Реализуйте интерфейс `YdbValidationProvider`:
 
 ```ts
-import type { YdbValidationProvider } from '@ycforge/yorm';
+import type { YdbValidationProvider } from '@ycforge/ydb-orm';
 
 class MyValidationProvider implements YdbValidationProvider {
   async validate(entity: any): Promise<string[]> {

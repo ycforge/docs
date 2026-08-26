@@ -16,7 +16,7 @@ Yandex Cloud KMS does not provide a native hash function, so the blind index is 
 yarn add @ycforge/orm-security-providers
 ```
 
-The package requires `@ycforge/yorm` as a peer dependency.
+The package requires `@ycforge/ydb-orm` as a peer dependency.
 
 ## Options
 
@@ -42,12 +42,12 @@ Pass the provider in the module options under `blindIndexProvider`:
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbModule } from '@ycforge/yorm';
+import { YdbOrmModule } from '@ycforge/ydb-orm';
 import { KmsBlindIndexProvider } from '@ycforge/orm-security-providers/hmac-bi';
 
 @Module({
   imports: [
-    YdbModule.forRoot({
+    YdbOrmModule.forRoot({
       useFactory: () => ({
         endpoint: process.env.YDB_ENDPOINT!,
         auth_type: 'auth_key',
@@ -68,7 +68,7 @@ export class AppModule {}
 Mark a field with `@YdbEncrypted({ blindIndex: true })` — the ORM will store the hash in the synthetic `{field}_bi` column (`Utf8`):
 
 ```ts
-import { YdbEntity, YdbBaseEntity, YdbColumn, YdbPrimaryColumn, YdbEncrypted } from '@ycforge/yorm';
+import { YdbEntity, YdbBaseEntity, YdbColumn, YdbPrimaryColumn, YdbEncrypted } from '@ycforge/ydb-orm';
 
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {
@@ -85,7 +85,7 @@ export class UserEntity extends YdbBaseEntity {
 ```ts
 // NestJS: add the entity to forFeature
 @Module({
-  imports: [YdbModule.forFeature([UserEntity])],
+  imports: [YdbOrmModule.forFeature([UserEntity])],
 })
 export class UsersModule {}
 

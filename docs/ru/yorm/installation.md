@@ -8,13 +8,13 @@
 ## Установка пакета
 
 ```bash
-yarn add @ycforge/yorm
+yarn add @ycforge/ydb-orm
 ```
 
 или
 
 ```bash
-npm install @ycforge/yorm
+npm install @ycforge/ydb-orm
 ```
 
 ## Peer-зависимости
@@ -54,7 +54,7 @@ yarn add @nestjs/common @nestjs/core reflect-metadata rxjs
 ## Проверка установки
 
 ```bash
-node -e "import('@ycforge/yorm').then(m => console.log(Object.keys(m).length + ' экспортов'))"
+node -e "import('@ycforge/ydb-orm').then(m => console.log(Object.keys(m).length + ' экспортов'))"
 ```
 
 Если команда вывела число экспортов — пакет установлен корректно.

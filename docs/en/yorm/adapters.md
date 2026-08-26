@@ -7,7 +7,7 @@ The built-in **YDB adapter** (`ydbAdapter`) is used by default, so working with 
 ## The OrmAdapter interface
 
 ```ts
-import type { OrmAdapter } from '@ycforge/yorm';
+import type { OrmAdapter } from '@ycforge/ydb-orm';
 ```
 
 Adapter fields:
@@ -32,8 +32,8 @@ The adapter is selected via the optional `adapter` field in `YdbModuleOptions`. 
 
 ```ts
 import { createAuth } from '@ycforge/auth';
-import { YdbCoreModule } from '@ycforge/yorm';
-import { ydbAdapter } from '@ycforge/yorm/ydb';
+import { YdbCoreModule } from '@ycforge/ydb-orm';
+import { ydbAdapter } from '@ycforge/ydb-orm/ydb';
 
 @Module({
   imports: [
@@ -51,12 +51,12 @@ export class AppModule {}
 
 A custom adapter (e.g. a wrapper adding metrics, or a stub for tests) is passed through the same `adapter` field.
 
-## The `@ycforge/yorm/ydb` subpath export
+## The `@ycforge/ydb-orm/ydb` subpath export
 
 The YDB adapter implementation is available via a dedicated subpath import:
 
 ```ts
-import { ydbAdapter, createDriver, createExecutor, mapToYdb } from '@ycforge/yorm/ydb';
+import { ydbAdapter, createDriver, createExecutor, mapToYdb } from '@ycforge/ydb-orm/ydb';
 ```
 
 It also exports `YdbSchemaSyncer`, the DDL generators (`generateCreateTableYql` and others), the retry utilities (`runWithRetry`, `withRetryPolicy`, `resolveYdbRetryPolicy`), and the related types. All of these are available from the package root as well — the subpath exists for working with the YDB adapter explicitly.

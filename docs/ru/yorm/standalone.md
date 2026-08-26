@@ -5,7 +5,7 @@ ORM можно использовать в скриптах, Lambda-функци
 ## Создание подключения
 
 ```ts
-import { createDriver, createExecutor, configureEntities } from '@ycforge/yorm';
+import { createDriver, createExecutor, configureEntities } from '@ycforge/ydb-orm';
 import { UserEntity, PostEntity } from './entities/index.js';
 
 const driver = await createDriver({
@@ -65,7 +65,7 @@ await executor.transaction().execute(async (trx) => {
 ## Миграции в скрипте
 
 ```ts
-import { YdbMigrationRunner, loadMigrationsFromDir } from '@ycforge/yorm';
+import { YdbMigrationRunner, loadMigrationsFromDir } from '@ycforge/ydb-orm';
 
 const migrations = await loadMigrationsFromDir('./migrations');
 const runner = new YdbMigrationRunner(executor);

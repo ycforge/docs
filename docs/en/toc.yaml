@@ -15,7 +15,7 @@ items:
     items:
       - name: Overview
         href: auth/index.md
-  - name: yorm
+  - name: ydb-orm
     items:
       - name: Overview
         href: yorm/index.md

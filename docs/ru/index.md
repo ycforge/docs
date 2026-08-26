@@ -6,23 +6,23 @@ YCForge — набор open-source инструментов для разраб�
 
 ### auth
 
-Единая авторизация для API Яндекс Облака и YDB. Один `AuthManager` можно переиспользовать в `@ycforge/yorm` и `@ycforge/orm-security-providers`.
+Единая авторизация для API Яндекс Облака и YDB. Один `AuthManager` можно переиспользовать в `@ycforge/ydb-orm` и `@ycforge/orm-security-providers`.
 
 - [Документация](auth/index.md)
 - GitHub: [github.com/ycforge/auth](https://github.com/ycforge/auth)
 - npm: [npmjs.com/package/@ycforge/auth](https://www.npmjs.com/package/@ycforge/auth)
 
-### yorm
+### ydb-orm
 
 TypeORM-like ORM для YDB: Active Record, связи (relations), шифрование полей с blind index, schema sync, миграции, транзакции и интеграция с NestJS.
 
 - [Документация](yorm/index.md)
-- GitHub: [github.com/ycforge/yorm](https://github.com/ycforge/yorm)
-- npm: [npmjs.com/package/@ycforge/yorm](https://www.npmjs.com/package/@ycforge/yorm)
+- GitHub: [github.com/ycforge/ydb-orm](https://github.com/ycforge/ydb-orm)
+- npm: [npmjs.com/package/@ycforge/ydb-orm](https://www.npmjs.com/package/@ycforge/ydb-orm)
 
 ### orm-security-providers
 
-Провайдеры шифрования и blind index для yorm: Yandex Cloud KMS и HMAC-SHA256. Документация — в разделе «Криптопровайдеры» документации yorm.
+Провайдеры шифрования и blind index для ydb-orm: Yandex Cloud KMS и HMAC-SHA256. Документация — в разделе «Криптопровайдеры» документации ydb-orm.
 
 - [Документация](yorm/crypto-providers/encryption/yandex-kms.md)
 - GitHub: [github.com/ycforge/orm-security-providers](https://github.com/ycforge/orm-security-providers)

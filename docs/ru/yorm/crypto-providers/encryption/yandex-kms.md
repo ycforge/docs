@@ -10,7 +10,7 @@
 yarn add @ycforge/orm-security-providers
 ```
 
-Пакет требует `@ycforge/yorm` как peer-зависимость.
+Пакет требует `@ycforge/ydb-orm` как peer-зависимость.
 
 ## Подключение в forRoot
 
@@ -18,13 +18,13 @@ yarn add @ycforge/orm-security-providers
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbModule } from '@ycforge/yorm';
+import { YdbOrmModule } from '@ycforge/ydb-orm';
 import { KmsEncryptionProvider } from '@ycforge/orm-security-providers/yandex-kms';
 import { createAuth, authKeyFromFile } from '@ycforge/auth';
 
 @Module({
   imports: [
-    YdbModule.forRoot({
+    YdbOrmModule.forRoot({
       useFactory: () => ({
         endpoint: process.env.YDB_ENDPOINT!,
         auth: createAuth(authKeyFromFile('./authorized_key.json')),
@@ -112,7 +112,7 @@ new KmsEncryptionProvider({
 ## Использование с сущностями
 
 ```ts
-import { YdbEntity, YdbBaseEntity, YdbColumn, YdbPrimaryColumn, YdbEncrypted, YdbSecurityAAD } from '@ycforge/yorm';
+import { YdbEntity, YdbBaseEntity, YdbColumn, YdbPrimaryColumn, YdbEncrypted, YdbSecurityAAD } from '@ycforge/ydb-orm';
 
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {
@@ -138,7 +138,7 @@ export class UserEntity extends YdbBaseEntity {
 ```ts
 // NestJS: добавьте сущность в forFeature
 @Module({
-  imports: [YdbModule.forFeature([UserEntity])],
+  imports: [YdbOrmModule.forFeature([UserEntity])],
 })
 export class UsersModule {}
 

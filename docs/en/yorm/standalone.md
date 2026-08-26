@@ -5,7 +5,7 @@ You can use the ORM in scripts, Lambda functions, or CLI utilities without NestJ
 ## Creating a connection
 
 ```ts
-import { createDriver, createExecutor, configureEntities } from '@ycforge/yorm';
+import { createDriver, createExecutor, configureEntities } from '@ycforge/ydb-orm';
 import { UserEntity, PostEntity } from './entities/index.js';
 
 const driver = await createDriver({
@@ -65,7 +65,7 @@ await executor.transaction().execute(async (trx) => {
 ## Migrations in a script
 
 ```ts
-import { YdbMigrationRunner, loadMigrationsFromDir } from '@ycforge/yorm';
+import { YdbMigrationRunner, loadMigrationsFromDir } from '@ycforge/ydb-orm';
 
 const migrations = await loadMigrationsFromDir('./migrations');
 const runner = new YdbMigrationRunner(executor);

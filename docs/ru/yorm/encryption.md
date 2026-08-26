@@ -52,7 +52,7 @@ interface YdbBlindIndexProvider {
 
 {% note warning %}
 
-Провайдеры входят в **отдельный пакет** `@ycforge/orm-security-providers` (AES-256-GCM, HMAC-SHA256, KMS-провайдеры). В составе `@ycforge/yorm` есть только заглушка `Base64TestEncryptionProvider` — она подходит для тестов, но не обеспечивает реальной криптографии.
+Провайдеры входят в **отдельный пакет** `@ycforge/orm-security-providers` (AES-256-GCM, HMAC-SHA256, KMS-провайдеры). В составе `@ycforge/ydb-orm` есть только заглушка `Base64TestEncryptionProvider` — она подходит для тестов, но не обеспечивает реальной криптографии.
 
 {% endnote %}
 
@@ -60,7 +60,7 @@ interface YdbBlindIndexProvider {
 
 ```ts
 import { createCipheriv, createDecipheriv, createHmac, randomBytes } from 'node:crypto';
-import type { YdbEncryptionProvider, YdbBlindIndexProvider, YdbEncryptionContext } from '@ycforge/yorm';
+import type { YdbEncryptionProvider, YdbBlindIndexProvider, YdbEncryptionContext } from '@ycforge/ydb-orm';
 
 export class AesGcmEncryptionProvider
   implements YdbEncryptionProvider, YdbBlindIndexProvider

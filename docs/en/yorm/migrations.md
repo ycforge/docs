@@ -5,8 +5,8 @@ Migrations are a way to manage the database schema in production. Like in TypeOR
 ## Migration structure
 
 ```ts
-import type { YdbMigration, YdbExecutor } from '@ycforge/yorm';
-import { executeSql } from '@ycforge/yorm';
+import type { YdbMigration, YdbExecutor } from '@ycforge/ydb-orm';
+import { executeSql } from '@ycforge/ydb-orm';
 
 export class CreateUsers1755000000000 implements YdbMigration {
   readonly name = '1755000000000-CreateUsers';
@@ -83,7 +83,7 @@ import {
   YdbEnum,
   YdbPrimaryColumn,
   YdbTtl,
-} from '@ycforge/yorm';
+} from '@ycforge/ydb-orm';
 
 export enum StatusEnum {
   ACTIVE = 'active',
@@ -112,7 +112,7 @@ export class Order extends YdbBaseEntity {
 For scripts and tooling the generation is also available programmatically:
 
 ```ts
-import { createEntityFileFromSpec } from '@ycforge/yorm';
+import { createEntityFileFromSpec } from '@ycforge/ydb-orm';
 
 const created = createEntityFileFromSpec('./src', {
   className: 'OrderEntity',
@@ -265,7 +265,7 @@ import {
   loadMigrationsFromDir,
   planMigration,
   executeSql,
-} from '@ycforge/yorm';
+} from '@ycforge/ydb-orm';
 
 const migrations = await loadMigrationsFromDir('./migrations');
 const runner = new YdbMigrationRunner(executor);

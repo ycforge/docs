@@ -7,7 +7,7 @@ The ORM can validate entities before writing. Validation runs before encryption 
 The validation provider is set on an entity via `setValidationProvider`. The built-in `ClassValidatorProvider` uses `class-validator` (an optional peer dependency).
 
 ```ts
-import { ClassValidatorProvider } from '@ycforge/yorm';
+import { ClassValidatorProvider } from '@ycforge/ydb-orm';
 import { UserEntity } from './user.entity';
 
 UserEntity.setValidationProvider(new ClassValidatorProvider());
@@ -25,7 +25,7 @@ Rules are declared with `class-validator` decorators on entity fields:
 
 ```ts
 import { IsEmail, IsNotEmpty, Length, validate } from 'class-validator';
-import { YdbBaseEntity, YdbEntity, YdbColumn, YdbPrimaryColumn } from '@ycforge/yorm';
+import { YdbBaseEntity, YdbEntity, YdbColumn, YdbPrimaryColumn } from '@ycforge/ydb-orm';
 
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {
@@ -48,7 +48,7 @@ export class UserEntity extends YdbBaseEntity {
 Implement the `YdbValidationProvider` interface:
 
 ```ts
-import type { YdbValidationProvider } from '@ycforge/yorm';
+import type { YdbValidationProvider } from '@ycforge/ydb-orm';
 
 class MyValidationProvider implements YdbValidationProvider {
   async validate(entity: any): Promise<string[]> {

@@ -1,6 +1,6 @@
 # Разработка
 
-Раздел для тех, кто развивает саму библиотеку `@ycforge/yorm`. Исходники — в каталоге `../yorm`.
+Раздел для тех, кто развивает саму библиотеку `@ycforge/ydb-orm`. Исходники — в каталоге `../yorm`.
 
 ## Требования
 
@@ -30,7 +30,7 @@ yarn format        # prettier --write
 - `src/repository/` — `YdbRepository`, `YdbEntityManager`, `InjectRepository`.
 - `src/encryption/` — интерфейсы провайдеров шифрования.
 - `src/metadata/` — сбор метаданных из Reflect, глобальный реестр сущностей, валидация.
-- `src/module/` — NestJS-интеграция (`YdbCoreModule`, `YdbModule`, repository-factory).
+- `src/module/` — NestJS-интеграция (`YdbCoreModule`, `YdbOrmModule`, repository-factory).
 - `src/schema/` — schema sync и генераторы DDL.
 - `src/transaction/` — `YdbTransactionManager`.
 - `src/credentials/` — credentials provider для auth_key.
@@ -55,5 +55,5 @@ yarn format        # prettier --write
 - Prettier: одинарные кавычки, `trailingComma: "all"`.
 - Относительные импорты — с расширением `.js` (ESM/`nodenext`).
 - Запросы к YDB параметризованы (`query.parameter(...)`) — не конкатенируйте значения в SQL.
-- Новую сущность-потребителя добавляйте в `YdbModule.forFeature([...])`.
+- Новую сущность-потребителя добавляйте в `YdbOrmModule.forFeature([...])`.
 - Секреты (`authorized_key.json`, `.env`) не коммитить и не выводить.

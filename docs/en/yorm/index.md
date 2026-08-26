@@ -1,6 +1,6 @@
-# yorm
+# ydb-orm
 
-**@ycforge/yorm** is a TypeORM-like ORM for [YDB (Yandex Database)](https://ydb.tech/) written in TypeScript.
+**@ycforge/ydb-orm** is a TypeORM-like ORM for [YDB (Yandex Database)](https://ydb.tech/) written in TypeScript.
 
 The library provides Active Record, relations, field encryption with blind index, schema sync, transactions, and NestJS integration.
 
@@ -18,12 +18,12 @@ The library provides Active Record, relations, field encryption with blind index
 - **Database schema** — `schema sync` (like `synchronize` in TypeORM) and DDL generators for migrations.
 - **Migrations** — classes with `up`/`down`, CLI commands `migration:create|generate|run|revert|show`.
 - **Transactions** — `YdbTransactionManager.runInTransaction()`.
-- **NestJS integration** — `YdbCoreModule.forRootAsync()` + `YdbModule.forFeature()`.
+- **NestJS integration** — `YdbCoreModule.forRootAsync()` + `YdbOrmModule.forFeature()`.
 - **Standalone usage** — `createDriver` / `createExecutor` / `configureEntities` for scripts and CLIs.
 
 ## Principles
 
-- **Convenience** — TypeORM-like API: if you know TypeORM, yorm will feel familiar.
+- **Convenience** — TypeORM-like API: if you know TypeORM, ydb-orm will feel familiar.
 - **Minimalism** — optimized for memory and CPU.
 - **Functionality** — typical YDB scenarios are covered out of the box.
 
@@ -35,8 +35,8 @@ The library provides Active Record, relations, field encryption with blind index
 
 ## Repository
 
-- GitHub: [github.com/ycforge/yorm](https://github.com/ycforge/yorm)
-- npm: [npmjs.com/package/@ycforge/yorm](https://www.npmjs.com/package/@ycforge/yorm)
+- GitHub: [github.com/ycforge/ydb-orm](https://github.com/ycforge/ydb-orm)
+- npm: [npmjs.com/package/@ycforge/ydb-orm](https://www.npmjs.com/package/@ycforge/ydb-orm)
 - License: MIT
 
 ## Getting started

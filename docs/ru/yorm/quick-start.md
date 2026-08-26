@@ -10,7 +10,7 @@ import {
   YdbEntity,
   YdbColumn,
   YdbPrimaryColumn,
-} from '@ycforge/yorm';
+} from '@ycforge/ydb-orm';
 
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {
@@ -31,7 +31,7 @@ export class UserEntity extends YdbBaseEntity {
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbCoreModule } from '@ycforge/yorm';
+import { YdbCoreModule } from '@ycforge/ydb-orm';
 import { createAuth, authKeyFromFile } from '@ycforge/auth';
 
 @Module({
@@ -52,15 +52,15 @@ export class AppModule {}
 
 ## 3. Подключите forFeature в UserModule
 
-Каждый feature-модуль регистрирует сущности, с которыми работает, через `YdbModule.forFeature([...])`. Это инжектирует в сущность executor (и опционально провайдеры шифрования), делая её статические методы доступными.
+Каждый feature-модуль регистрирует сущности, с которыми работает, через `YdbOrmModule.forFeature([...])`. Это инжектирует в сущность executor (и опционально провайдеры шифрования), делая её статические методы доступными.
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbModule } from '@ycforge/yorm';
+import { YdbOrmModule } from '@ycforge/ydb-orm';
 import { UserEntity } from './user.entity';
 
 @Module({
-  imports: [YdbModule.forFeature([UserEntity])],
+  imports: [YdbOrmModule.forFeature([UserEntity])],
 })
 export class UserModule {}
 ```
@@ -79,7 +79,7 @@ export class AppModule {}
 
 {% note warning %}
 
-`YdbModule.forFeature([...])` обязателен для каждой сущности: без него статические методы сущности упадут с ошибкой «YDB executor not set».
+`YdbOrmModule.forFeature([...])` обязателен для каждой сущности: без него статические методы сущности упадут с ошибкой «YDB executor not set».
 
 {% endnote %}
 
@@ -120,11 +120,11 @@ export class UsersService {
 
 ## 5. Используйте репозиторий через DI
 
-`YdbModule.forFeature([...])` автоматически регистрирует `YdbRepository<Entity>`. Внедряйте его через `@InjectRepository()` в сервисы — так не приходится обращаться к глобальным статическим методам сущности.
+`YdbOrmModule.forFeature([...])` автоматически регистрирует `YdbRepository<Entity>`. Внедряйте его через `@InjectRepository()` в сервисы — так не приходится обращаться к глобальным статическим методам сущности.
 
 ```ts
 import { Injectable } from '@nestjs/common';
-import { InjectRepository, YdbRepository } from '@ycforge/yorm';
+import { InjectRepository, YdbRepository } from '@ycforge/ydb-orm';
 import { UserEntity } from './user.entity';
 
 @Injectable()
@@ -181,7 +181,7 @@ export class UsersController {
 
 ```ts
 @Module({
-  // ...imports: [YdbModule.forFeature([UserEntity])] — как в шаге 3
+  // ...imports: [YdbOrmModule.forFeature([UserEntity])] — как в шаге 3
   providers: [UsersService],
   controllers: [UsersController],
 })

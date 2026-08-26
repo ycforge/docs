@@ -10,7 +10,7 @@ The AAD string is passed to KMS as `aadContext` — the ciphertext is cryptograp
 yarn add @ycforge/orm-security-providers
 ```
 
-The package requires `@ycforge/yorm` as a peer dependency.
+The package requires `@ycforge/ydb-orm` as a peer dependency.
 
 ## Config in forRoot
 
@@ -18,13 +18,13 @@ Pass the provider in the module options under `encryptionProvider`. KMS authoriz
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbModule } from '@ycforge/yorm';
+import { YdbOrmModule } from '@ycforge/ydb-orm';
 import { KmsEncryptionProvider } from '@ycforge/orm-security-providers/yandex-kms';
 import { createAuth, authKeyFromFile } from '@ycforge/auth';
 
 @Module({
   imports: [
-    YdbModule.forRoot({
+    YdbOrmModule.forRoot({
       useFactory: () => ({
         endpoint: process.env.YDB_ENDPOINT!,
         auth: createAuth(authKeyFromFile('./authorized_key.json')),
@@ -112,7 +112,7 @@ new KmsEncryptionProvider({
 ## Usage with entities
 
 ```ts
-import { YdbEntity, YdbBaseEntity, YdbColumn, YdbPrimaryColumn, YdbEncrypted, YdbSecurityAAD } from '@ycforge/yorm';
+import { YdbEntity, YdbBaseEntity, YdbColumn, YdbPrimaryColumn, YdbEncrypted, YdbSecurityAAD } from '@ycforge/ydb-orm';
 
 @YdbEntity('users')
 export class UserEntity extends YdbBaseEntity {
@@ -138,7 +138,7 @@ export class UserEntity extends YdbBaseEntity {
 ```ts
 // NestJS: add the entity to forFeature
 @Module({
-  imports: [YdbModule.forFeature([UserEntity])],
+  imports: [YdbOrmModule.forFeature([UserEntity])],
 })
 export class UsersModule {}
 
