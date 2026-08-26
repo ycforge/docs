@@ -18,7 +18,7 @@
 - **Схема БД** — `schema sync` (аналог `synchronize` в TypeORM) и генераторы DDL для миграций.
 - **Миграции** — классы с `up`/`down`, CLI-команды `migration:create|generate|run|revert|show`.
 - **Транзакции** — `YdbTransactionManager.runInTransaction()`.
-- **NestJS-интеграция** — `YdbCoreModule.forRootAsync()` + `YdbModule.forFeature()`.
+- **NestJS-интеграция** — `YdbCoreModule.forRootAsync()` + `YdbOrmModule.forFeature()`.
 - **Использование без NestJS** — `createDriver` / `createExecutor` / `configureEntities` для скриптов и CLI.
 
 ## Принципы

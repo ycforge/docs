@@ -5,7 +5,7 @@
 | Экспорт | Тип | Описание |
 | --- | --- | --- |
 | `YdbCoreModule` | класс | корневой модуль NestJS: `forRootAsync()` |
-| `YdbModule` | класс | модуль NestJS: `forRoot()`, `forFeature([...])` |
+| `YdbOrmModule` | класс | модуль NestJS: `forRoot()`, `forFeature([...])` |
 | `YdbBaseEntity` | класс | базовый класс Active Record сущности |
 | `YdbQueryBuilder` | класс | цепочный построитель запросов |
 | `YdbRepository<T>` | класс | DI-репозиторий для сущности |

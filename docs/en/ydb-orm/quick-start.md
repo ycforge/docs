@@ -52,15 +52,15 @@ export class AppModule {}
 
 ## 3. Connect forFeature in UserModule
 
-Each feature module registers the entities it works with via `YdbModule.forFeature([...])`. This injects the executor (and optional encryption providers) into the entity, making its static methods usable.
+Each feature module registers the entities it works with via `YdbOrmModule.forFeature([...])`. This injects the executor (and optional encryption providers) into the entity, making its static methods usable.
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbModule } from '@ycforge/ydb-orm';
+import { YdbOrmModule } from '@ycforge/ydb-orm';
 import { UserEntity } from './user.entity';
 
 @Module({
-  imports: [YdbModule.forFeature([UserEntity])],
+  imports: [YdbOrmModule.forFeature([UserEntity])],
 })
 export class UserModule {}
 ```
@@ -79,7 +79,7 @@ export class AppModule {}
 
 {% note warning %}
 
-`YdbModule.forFeature([...])` is required for each entity: without it, static entity methods will fail with a "YDB executor not set" error.
+`YdbOrmModule.forFeature([...])` is required for each entity: without it, static entity methods will fail with a "YDB executor not set" error.
 
 {% endnote %}
 
@@ -120,7 +120,7 @@ export class UsersService {
 
 ## 5. Use a repository with DI
 
-`YdbModule.forFeature([...])` automatically registers a `YdbRepository<Entity>`. Inject it with `@InjectRepository()` in your services so you don't need to call the entity's global static methods.
+`YdbOrmModule.forFeature([...])` automatically registers a `YdbRepository<Entity>`. Inject it with `@InjectRepository()` in your services so you don't need to call the entity's global static methods.
 
 ```ts
 import { Injectable } from '@nestjs/common';
@@ -181,7 +181,7 @@ Register the service and the controller in the `UserModule` from step 3 — its 
 
 ```ts
 @Module({
-  // ...imports: [YdbModule.forFeature([UserEntity])] — as in step 3
+  // ...imports: [YdbOrmModule.forFeature([UserEntity])] — as in step 3
   providers: [UsersService],
   controllers: [UsersController],
 })

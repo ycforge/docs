@@ -18,7 +18,7 @@ The library provides Active Record, relations, field encryption with blind index
 - **Database schema** — `schema sync` (like `synchronize` in TypeORM) and DDL generators for migrations.
 - **Migrations** — classes with `up`/`down`, CLI commands `migration:create|generate|run|revert|show`.
 - **Transactions** — `YdbTransactionManager.runInTransaction()`.
-- **NestJS integration** — `YdbCoreModule.forRootAsync()` + `YdbModule.forFeature()`.
+- **NestJS integration** — `YdbCoreModule.forRootAsync()` + `YdbOrmModule.forFeature()`.
 - **Standalone usage** — `createDriver` / `createExecutor` / `configureEntities` for scripts and CLIs.
 
 ## Principles
