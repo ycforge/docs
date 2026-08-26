@@ -50,13 +50,13 @@ Pass the key via an environment variable — do not hardcode it in code or commi
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbModule } from '@ycforge/ydb-orm';
+import { YdbOrmModule } from '@ycforge/ydb-orm';
 import { KmsBlindIndexProvider } from '@ycforge/orm-security-providers/hmac-bi';
 import { AesGcmEncryptionProvider } from './aes-gcm-encryption.provider';
 
 @Module({
   imports: [
-    YdbModule.forRoot({
+    YdbOrmModule.forRoot({
       useFactory: () => ({
         endpoint: process.env.YDB_ENDPOINT!,
         auth_type: 'auth_key',

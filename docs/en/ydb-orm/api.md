@@ -5,7 +5,7 @@
 | Export | Type | Description |
 | --- | --- | --- |
 | `YdbCoreModule` | class | NestJS root module: `forRootAsync()` |
-| `YdbModule` | class | NestJS module: `forRoot()`, `forFeature([...])` |
+| `YdbOrmModule` | class | NestJS module: `forRoot()`, `forFeature([...])` |
 | `YdbBaseEntity` | class | Active Record base entity class |
 | `YdbQueryBuilder` | class | chainable query builder |
 | `YdbRepository<T>` | class | DI repository for an entity |

@@ -169,7 +169,7 @@ The manager is provided under the `YCFORGE_AUTH` symbol.
 
 ```ts
 import { Module } from '@nestjs/common';
-import { YdbModule } from '@ycforge/ydb-orm';
+import { YdbOrmModule } from '@ycforge/ydb-orm';
 import { YCFORGE_AUTH, YcAuthModule } from '@ycforge/auth/nestjs';
 import type { AuthManager } from '@ycforge/auth';
 
@@ -179,7 +179,7 @@ import type { AuthManager } from '@ycforge/auth';
       config: { type: 'metadata' },
       global: true,
     }),
-    YdbModule.forRootAsync({
+    YdbOrmModule.forRootAsync({
       useFactory: (auth: AuthManager) => ({
         endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135',
         database: '/ru-central1/.../...',

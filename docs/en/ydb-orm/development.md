@@ -30,7 +30,7 @@ yarn format        # prettier --write
 - `src/repository/` — `YdbRepository`, `YdbEntityManager`, `InjectRepository`.
 - `src/encryption/` — encryption provider interfaces.
 - `src/metadata/` — metadata collection from Reflect, global entity registry, validation.
-- `src/module/` — NestJS integration (`YdbCoreModule`, `YdbModule`, repository-factory).
+- `src/module/` — NestJS integration (`YdbCoreModule`, `YdbOrmModule`, repository-factory).
 - `src/schema/` — schema sync and DDL generators.
 - `src/transaction/` — `YdbTransactionManager`.
 - `src/credentials/` — credentials provider for auth_key.
@@ -55,5 +55,5 @@ npm publishing: `prepublishOnly` runs `yarn build`. Only `dist/` + `README.md` +
 - Prettier: single quotes, `trailingComma: "all"`.
 - Relative imports use the `.js` extension (ESM/`nodenext`).
 - YDB queries are parameterized (`query.parameter(...)`) — never concatenate values into SQL.
-- Add any new consumer entity to `YdbModule.forFeature([...])`.
+- Add any new consumer entity to `YdbOrmModule.forFeature([...])`.
 - Do not commit or expose secrets (`authorized_key.json`, `.env`).
