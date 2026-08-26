@@ -53,12 +53,18 @@ items:
         href: ydb-orm/migrations.md
       - name: Transactions
         href: ydb-orm/transactions.md
+      - name: AbortSignal
+        href: ydb-orm/abort-signal.md
       - name: Authentication
         href: ydb-orm/authentication.md
       - name: Standalone usage
         href: ydb-orm/standalone.md
       - name: Validation
         href: ydb-orm/validation.md
+      - name: CLI
+        href: ydb-orm/cli.md
+      - name: Edge cases
+        href: ydb-orm/edge-cases.md
       - name: API reference
         href: ydb-orm/api.md
       - name: NestJS adapter
@@ -75,6 +81,12 @@ items:
             href: ydb-orm/nest/schema-sync.md
           - name: Encryption
             href: ydb-orm/nest/encryption.md
+          - name: Validation
+            href: ydb-orm/nest/validation.md
+          - name: Logging
+            href: ydb-orm/nest/logging.md
+          - name: AbortSignal
+            href: ydb-orm/nest/abort-signal.md
           - name: Authentication
             href: ydb-orm/nest/authentication.md
       - name: Development

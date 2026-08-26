@@ -1,10 +1,38 @@
 # Быстрый старт
 
-## 1. Определите сущность
+Быстрый старт для обычного Node.js-приложения — без фреймворков. Для NestJS см. [Быстрый старт (NestJS)](nest/quick-start.md).
+
+## 1. Создайте проект
+
+```bash
+mkdir myapp && cd myapp
+yarn init -y
+yarn add @ycforge/ydb-orm reflect-metadata
+```
+
+Пакет — ESM-only (`"type": "module"`), требуется Node.js >= 22. Убедитесь, что в `package.json` есть `"type": "module"`, а в `tsconfig.json` включены декораторы:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true
+  }
+}
+```
+
+`reflect-metadata` импортируется один раз в точке входа приложения.
+
+## 2. Определите сущность
 
 Каждая сущность — класс, наследующий `YdbBaseEntity` и декорированный `@YdbEntity('имя_таблицы')`.
 
 ```ts
+// src/user.entity.ts
 import {
   YdbBaseEntity,
   YdbEntity,
@@ -25,106 +53,79 @@ export class UserEntity extends YdbBaseEntity {
 }
 ```
 
-## 2. Создайте драйвер и executor
+## 3. Подключитесь к YDB и настройте сущности
 
 ```ts
+// src/db.ts
 import { createDriver, createExecutor, configureEntities } from '@ycforge/ydb-orm';
 import { createAuth, authKeyFromFile } from '@ycforge/auth';
+import { UserEntity } from './user.entity.js';
 
-const driver = await createDriver({
-  endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/b1g.../ydb',
-  auth: createAuth(authKeyFromFile('./authorized_key.json')),
-});
+export async function initDb() {
+  const options = {
+    endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/b1g.../ydb',
+    auth: createAuth(authKeyFromFile('./authorized_key.json')),
+  };
 
-const executor = createExecutor(driver);
+  const driver = await createDriver(options);
+  const executor = createExecutor(driver, options);
+
+  // Пробрасываем executor (и опционально провайдеры шифрования/валидации) в сущности.
+  // После этого доступны статические методы Active Record.
+  configureEntities([UserEntity], { executor });
+
+  return { driver, executor };
+}
 ```
-
-## 3. Настройте сущности
-
-```ts
-configureEntities([UserEntity], { executor });
-```
-
-После `configureEntities` статические методы Active Record доступны на каждой сущности.
 
 ## 4. Используйте Active Record
 
 ```ts
-import { UserEntity } from './user.entity';
+// src/main.ts
+import 'reflect-metadata';
+import { initDb } from './db.js';
+import { UserEntity } from './user.entity.js';
 
-// Вставка (uuid генерируется автоматически)
-const user = new UserEntity();
-user.name = 'Иван';
-user.email = 'ivan@example.com';
-await UserEntity.save(user);
+const { driver } = await initDb();
 
-// Чтение
-const found = await UserEntity.find({ uuid: user.uuid });
-console.log(found?.name); // 'Иван'
+try {
+  // Вставка (uuid генерируется автоматически)
+  const user = new UserEntity();
+  user.name = 'Иван';
+  user.email = 'ivan@example.com';
+  await UserEntity.save(user);
 
-// Обновление (save с заполненным uuid)
-user.name = 'Иван Петров';
-await UserEntity.save(user);
+  // Чтение
+  const found = await UserEntity.find({ uuid: user.uuid });
+  console.log(found?.name); // 'Иван'
 
-// Список с пагинацией
-const page = await UserEntity.findAll({}, { limit: 50, offset: 0 });
+  // Обновление (save с заполненным uuid)
+  user.name = 'Иван Петров';
+  await UserEntity.save(user);
 
-// Количество
-const total = await UserEntity.count({});
+  // Список с пагинацией
+  const page = await UserEntity.findAll({}, { limit: 50, offset: 0 });
 
-// Удаление
-await UserEntity.delete(user.uuid);
+  // Количество
+  const total = await UserEntity.count({});
+
+  // Удаление
+  await UserEntity.delete(user.uuid);
+} finally {
+  driver.close();
+}
 ```
 
-## 5. Используйте репозиторий
+Запуск:
 
-`getOrCreateRepository` создаёт `YdbRepository<Entity>` из настроенных runtime-зависимостей. Он собирает логику доступа к данным в одном месте и проще мокать в тестах.
-
-```ts
-import { getOrCreateRepository } from '@ycforge/ydb-orm';
-import { UserEntity } from './user.entity';
-
-const users = getOrCreateRepository(UserEntity);
-
-// CRUD
-const user = await users.findOneBy({ uuid });
-const all = await users.findAll({ name: 'Иван' }, { limit: 50 });
-const count = await users.count({ is_admin: true });
-await users.save(entity);
-await users.insertMany([u1, u2]);
-await users.updateBy({ status: 'old' }, { status: 'archived' });
-await users.deleteBy({ status: 'deprecated' });
-
-// QueryBuilder
-const popular = await users.query()
-  .where({ is_public: true })
-  .orderBy('views', 'DESC')
-  .limit(20)
-  .getMany();
+```bash
+node --experimental-strip-types src/main.ts
+# или скомпилируйте через tsc и запустите dist/main.js
 ```
 
-`YdbEntityManager` — фабрика репозиториев. Удобен, когда нужно работать с разными сущностями через единый интерфейс:
+## 5. Schema sync (для разработки)
 
-```ts
-import { YdbEntityManager } from '@ycforge/ydb-orm';
-
-const manager = new YdbEntityManager();
-const userRepo = manager.getRepository(UserEntity);
-const postRepo = manager.getRepository(PostEntity);
-
-await userRepo.save(user);
-const posts = await postRepo.findBy({ author_uuid: user.uuid });
-```
-
-{% note info %}
-
-Репозиторий — необязательный паттерн: статические методы `UserEntity` можно вызывать из любого места напрямую (см. [Active Record](active-record.md)). Подробнее о методах репозитория читайте в разделе [Репозиторий](repository.md).
-
-{% endnote %}
-
-## 6. Запустите schema sync (для разработки)
-
-При старте с опцией `sync: true` ORM создаст недостающие таблицы и колонки автоматически. Для продакшена используйте [миграции](migrations.md) вместо `sync`.
+В разработке ORM может создавать недостающие таблицы и колонки автоматически:
 
 ```ts
 import { YdbSchemaSyncer } from '@ycforge/ydb-orm';
@@ -133,16 +134,42 @@ const syncer = new YdbSchemaSyncer(executor);
 await syncer.sync([UserEntity]);
 ```
 
-## 7. Закройте драйвер по завершении
+{% note warning %}
+
+Для продакшена используйте [миграции](migrations.md) вместо schema sync.
+
+{% endnote %}
+
+## 6. Репозиторий (опционально)
+
+`getOrCreateRepository` создаёт `YdbRepository<Entity>` из настроенных runtime-зависимостей. Он собирает логику доступа к данным в одном месте и проще мокается в тестах.
 
 ```ts
-driver.close();
+import { getOrCreateRepository, YdbEntityManager } from '@ycforge/ydb-orm';
+
+const users = getOrCreateRepository(UserEntity);
+const user = await users.findOneBy({ uuid });
+
+// QueryBuilder через репозиторий
+const recent = await users.query()
+  .orderBy('name')
+  .limit(20)
+  .getMany();
+
+// Или фабрика для работы с несколькими сущностями:
+const manager = new YdbEntityManager();
+const postsRepo = manager.getRepository(PostEntity);
 ```
+
+Полный список методов — в разделе [Репозиторий](repository.md).
 
 ## Следующие шаги
 
-- [Сущности и декораторы](entity.md) — все доступные декораторы и типы колонок
+- [Сущности и декораторы](entity.md) — все декораторы и типы колонок
 - [Active Record](active-record.md) — статические методы, QueryOptions, ленивая дешифровка
-- [Репозиторий](repository.md) — standalone и NestJS DI паттерны
-- [Транзакции](transactions.md) — атомарные операции
-- [Быстрый старт (NestJS)](nest/quick-start.md) — если вы используете NestJS, см. NestJS-руководство
+- [Репозиторий](repository.md) — паттерны репозитория
+- [Транзакции](transactions.md) — атомарные операции и их опции
+- [AbortSignal](abort-signal.md) — отмена запросов и таймауты
+- [Особые случаи](edge-cases.md) — подмена драйвера, логирование, ретраи
+- [CLI](cli.md) — миграции и генерация кода из командной строки
+- [Быстрый старт (NestJS)](nest/quick-start.md) — если вы используете NestJS
