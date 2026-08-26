@@ -19,7 +19,7 @@ npm install @ycforge/ydb-orm
 
 ## Peer-зависимости
 
-Для NestJS-интеграции добавьте peer-зависимости:
+Основной пакет не требует обязательных peer-зависимостей. Для [интеграции с NestJS](nest/overview.md) добавьте:
 
 ```bash
 yarn add @nestjs/common @nestjs/core reflect-metadata rxjs
@@ -27,7 +27,7 @@ yarn add @nestjs/common @nestjs/core reflect-metadata rxjs
 
 {% note info %}
 
-Для работы декораторов нужен `reflect-metadata`. Импортируйте его один раз в точке входа приложения (`main.ts`).
+Для работы декораторов нужен `reflect-metadata`. Импортируйте его один раз в точке входа приложения.
 
 {% endnote %}
 

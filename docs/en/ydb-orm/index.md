@@ -2,7 +2,7 @@
 
 **@ycforge/ydb-orm** is a TypeORM-like ORM for [YDB (Yandex Database)](https://ydb.tech/) written in TypeScript.
 
-The library provides Active Record, relations, field encryption with blind index, schema sync, transactions, and NestJS integration.
+The library provides Active Record, relations, field encryption with blind index, schema sync, transactions, and a NestJS adapter.
 
 {% note info %}
 
@@ -18,8 +18,8 @@ The library provides Active Record, relations, field encryption with blind index
 - **Database schema** — `schema sync` (like `synchronize` in TypeORM) and DDL generators for migrations.
 - **Migrations** — classes with `up`/`down`, CLI commands `migration:create|generate|run|revert|show`.
 - **Transactions** — `YdbTransactionManager.runInTransaction()`.
-- **NestJS integration** — `YdbCoreModule.forRootAsync()` + `YdbOrmModule.forFeature()`.
-- **Standalone usage** — `createDriver` / `createExecutor` / `configureEntities` for scripts and CLIs.
+- **NestJS adapter** — `YdbCoreModule.forRootAsync()` + `YdbOrmModule.forFeature()` with DI injection (see [NestJS docs](nest/overview.md)).
+- **Standalone usage** — `createDriver` / `createExecutor` / `configureEntities` for scripts, Lambdas, and CLIs.
 
 ## Principles
 
@@ -29,9 +29,9 @@ The library provides Active Record, relations, field encryption with blind index
 
 ## Technologies
 
-- Runtime: **Node.js ≥ 22**, ESM (`"type": "module"`).
+- Runtime: **Node.js >= 22**, ESM (`"type": "module"`).
 - Driver: `@ydbjs/*` (the new-generation YDB SDK).
-- Integration: NestJS (`@nestjs/common`, `@nestjs/core` — peer dependencies).
+- Optional: NestJS integration via `@ycforge/ydb-orm/nest` (peer dependencies: `@nestjs/common`, `@nestjs/core`).
 
 ## Repository
 
@@ -42,6 +42,7 @@ The library provides Active Record, relations, field encryption with blind index
 ## Getting started
 
 1. [Installation](installation.md)
-2. [Quick start](quick-start.md)
-3. [Entities & decorators](entity.md)
-4. [Active Record](active-record.md)
+2. [Quick start](quick-start.md) (standalone)
+3. [NestJS quick start](nest/quick-start.md) (if you use NestJS)
+4. [Entities & decorators](entity.md)
+5. [Active Record](active-record.md)

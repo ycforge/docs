@@ -25,193 +25,124 @@ export class UserEntity extends YdbBaseEntity {
 }
 ```
 
-## 2. Подключите корневой модуль
-
-В корневом модуле приложения подключите `YdbCoreModule.forRootAsync()` с параметрами подключения. Feature-модули, регистрирующие сущности, подключаются следующим шагом.
+## 2. Создайте драйвер и executor
 
 ```ts
-import { Module } from '@nestjs/common';
-import { YdbCoreModule } from '@ycforge/ydb-orm';
+import { createDriver, createExecutor, configureEntities } from '@ycforge/ydb-orm';
 import { createAuth, authKeyFromFile } from '@ycforge/auth';
 
-@Module({
-  imports: [
-    YdbCoreModule.forRootAsync({
-      useFactory: () => ({
-        endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/b1g.../ydb',
-        auth: createAuth(authKeyFromFile('./authorized_key.json')),
-        sync: true, // как synchronize в TypeORM — только для dev!
-      }),
-    }),
-  ],
-})
-export class AppModule {}
+const driver = await createDriver({
+  endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/b1g.../ydb',
+  auth: createAuth(authKeyFromFile('./authorized_key.json')),
+});
+
+const executor = createExecutor(driver);
 ```
 
-`forRootAsync` поддерживает `useFactory`, `useClass` и `useExisting` — так же, как в NestJS.
-
-## 3. Подключите forFeature в UserModule
-
-Каждый feature-модуль регистрирует сущности, с которыми работает, через `YdbOrmModule.forFeature([...])`. Это инжектирует в сущность executor (и опционально провайдеры шифрования), делая её статические методы доступными.
+## 3. Настройте сущности
 
 ```ts
-import { Module } from '@nestjs/common';
-import { YdbOrmModule } from '@ycforge/ydb-orm';
-import { UserEntity } from './user.entity';
-
-@Module({
-  imports: [YdbOrmModule.forFeature([UserEntity])],
-})
-export class UserModule {}
+configureEntities([UserEntity], { executor });
 ```
 
-Импортируйте `UserModule` в корневой модуль:
-
-```ts
-@Module({
-  imports: [
-    YdbCoreModule.forRootAsync({ ... }), // из шага 2
-    UserModule,
-  ],
-})
-export class AppModule {}
-```
-
-{% note warning %}
-
-`YdbOrmModule.forFeature([...])` обязателен для каждой сущности: без него статические методы сущности упадут с ошибкой «YDB executor not set».
-
-{% endnote %}
+После `configureEntities` статические методы Active Record доступны на каждой сущности.
 
 ## 4. Используйте Active Record
 
 ```ts
-import { Injectable } from '@nestjs/common';
 import { UserEntity } from './user.entity';
 
-@Injectable()
-export class UsersService {
-  async demo() {
-    // Вставка (uuid генерируется автоматически)
-    const user = new UserEntity();
-    user.name = 'Иван';
-    user.email = 'ivan@example.com';
-    await UserEntity.save(user);
+// Вставка (uuid генерируется автоматически)
+const user = new UserEntity();
+user.name = 'Иван';
+user.email = 'ivan@example.com';
+await UserEntity.save(user);
 
-    // Чтение
-    const found = await UserEntity.find({ uuid: user.uuid });
-    console.log(found?.name); // 'Иван'
+// Чтение
+const found = await UserEntity.find({ uuid: user.uuid });
+console.log(found?.name); // 'Иван'
 
-    // Обновление (save с заполненным uuid)
-    user.name = 'Иван Петров';
-    await UserEntity.save(user);
+// Обновление (save с заполненным uuid)
+user.name = 'Иван Петров';
+await UserEntity.save(user);
 
-    // Список с пагинацией
-    const page = await UserEntity.findAll({}, { limit: 50, offset: 0 });
+// Список с пагинацией
+const page = await UserEntity.findAll({}, { limit: 50, offset: 0 });
 
-    // Количество
-    const total = await UserEntity.count({});
+// Количество
+const total = await UserEntity.count({});
 
-    // Удаление
-    await UserEntity.delete(user.uuid);
-  }
-}
+// Удаление
+await UserEntity.delete(user.uuid);
 ```
 
-## 5. Используйте репозиторий через DI
+## 5. Используйте репозиторий
 
-`YdbOrmModule.forFeature([...])` автоматически регистрирует `YdbRepository<Entity>`. Внедряйте его через `@InjectRepository()` в сервисы — так не приходится обращаться к глобальным статическим методам сущности.
+`getOrCreateRepository` создаёт `YdbRepository<Entity>` из настроенных runtime-зависимостей. Он собирает логику доступа к данным в одном месте и проще мокать в тестах.
 
 ```ts
-import { Injectable } from '@nestjs/common';
-import { InjectRepository, YdbRepository } from '@ycforge/ydb-orm';
+import { getOrCreateRepository } from '@ycforge/ydb-orm';
 import { UserEntity } from './user.entity';
 
-@Injectable()
-export class UsersService {
-  constructor(
-    @InjectRepository(UserEntity)
-    private readonly users: YdbRepository<UserEntity>,
-  ) {}
+const users = getOrCreateRepository(UserEntity);
 
-  async create(name: string, email: string) {
-    const user = new UserEntity();
-    user.name = name;
-    user.email = email;
-    return this.users.save(user);
-  }
+// CRUD
+const user = await users.findOneBy({ uuid });
+const all = await users.findAll({ name: 'Иван' }, { limit: 50 });
+const count = await users.count({ is_admin: true });
+await users.save(entity);
+await users.insertMany([u1, u2]);
+await users.updateBy({ status: 'old' }, { status: 'archived' });
+await users.deleteBy({ status: 'deprecated' });
 
-  findByUuid(uuid: string) {
-    return this.users.findOneBy({ uuid });
-  }
-
-  findAll(limit: number, offset: number) {
-    return this.users.findAll({}, { limit, offset });
-  }
-
-  async remove(uuid: string) {
-    await this.users.delete(uuid);
-  }
-}
+// QueryBuilder
+const popular = await users.query()
+  .where({ is_public: true })
+  .orderBy('views', 'DESC')
+  .limit(20)
+  .getMany();
 ```
 
-Опубликуйте его через контроллер:
+`YdbEntityManager` — фабрика репозиториев. Удобен, когда нужно работать с разными сущностями через единый интерфейс:
 
 ```ts
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { YdbEntityManager } from '@ycforge/ydb-orm';
 
-@Controller('users')
-export class UsersController {
-  constructor(private readonly users: UsersService) {}
+const manager = new YdbEntityManager();
+const userRepo = manager.getRepository(UserEntity);
+const postRepo = manager.getRepository(PostEntity);
 
-  @Post()
-  create(@Body() body: { name: string; email: string }) {
-    return this.users.create(body.name, body.email);
-  }
-
-  @Get(':uuid')
-  findOne(@Param('uuid') uuid: string) {
-    return this.users.findByUuid(uuid);
-  }
-}
-```
-
-Зарегистрируйте сервис и контроллер в `UserModule` из шага 3 — его `imports` остаются без изменений:
-
-```ts
-@Module({
-  // ...imports: [YdbOrmModule.forFeature([UserEntity])] — как в шаге 3
-  providers: [UsersService],
-  controllers: [UsersController],
-})
-export class UserModule {}
+await userRepo.save(user);
+const posts = await postRepo.findBy({ author_uuid: user.uuid });
 ```
 
 {% note info %}
 
-Репозиторий — необязательный паттерн: статические методы `UserEntity` можно вызывать из любого места напрямую (см. [Active Record](active-record.md)). `YdbRepository` собирает логику доступа к данным в одном месте и проще мокать в тестах. Подробнее о методах репозитория читайте в разделе [Репозиторий](repository.md).
+Репозиторий — необязательный паттерн: статические методы `UserEntity` можно вызывать из любого места напрямую (см. [Active Record](active-record.md)). Подробнее о методах репозитория читайте в разделе [Репозиторий](repository.md).
 
 {% endnote %}
 
-## 6. Запустите приложение
-
-```bash
-yarn start
-```
+## 6. Запустите schema sync (для разработки)
 
 При старте с опцией `sync: true` ORM создаст недостающие таблицы и колонки автоматически. Для продакшена используйте [миграции](migrations.md) вместо `sync`.
 
-## 7. Проверьте приложение через curl
+```ts
+import { YdbSchemaSyncer } from '@ycforge/ydb-orm';
 
-```bash
-# Создайте пользователя
-curl -s -X POST http://localhost:3000/users \
-  -H 'Content-Type: application/json' \
-  -d '{"name":"Иван","email":"ivan@example.com"}'
-
-# Получите пользователя по uuid
-curl -s http://localhost:3000/users/<uuid>
+const syncer = new YdbSchemaSyncer(executor);
+await syncer.sync([UserEntity]);
 ```
 
-Подставьте вместо `<uuid>` значение, возвращённое запросом `POST`.
+## 7. Закройте драйвер по завершении
+
+```ts
+driver.close();
+```
+
+## Следующие шаги
+
+- [Сущности и декораторы](entity.md) — все доступные декораторы и типы колонок
+- [Active Record](active-record.md) — статические методы, QueryOptions, ленивая дешифровка
+- [Репозиторий](repository.md) — standalone и NestJS DI паттерны
+- [Транзакции](transactions.md) — атомарные операции
+- [Быстрый старт (NestJS)](nest/quick-start.md) — если вы используете NestJS, см. NestJS-руководство

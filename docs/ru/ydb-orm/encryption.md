@@ -1,28 +1,26 @@
 # Шифрование полей
 
-ORM поддерживает шифрование отдельных полей с поиском по зашифрованным значениям через blind index.
+ORM поддерживает шифрование отдельных полей с возможностью поиска по зашифрованным значениям через blind index.
 
 ## Как это работает
 
 1. Поле помечается `@YdbEncrypted({ blindIndex })`.
-2. Перед записью ORM вызывает провайдер шифрования: `encrypt(plaintext, aad, context)` → `Uint8Array`.
+2. Перед записью ORM вызывает провайдер шифрования: `encrypt(plaintext, aad, context)` -> `Uint8Array`.
 3. Ciphertext хранится в колонке `Bytes` (raw bytes — без base64, экономия ~33% по сравнению с `Utf8`).
-4. Если `blindIndex: true`, дополнительно вычисляется детерминированный хеш и сохраняется в synthetic-колонку `{field}_bi` (`Utf8`).
-5. После чтения ORM вызывает `decrypt(ciphertext, aad, context)` → plaintext.
+4. Если `blindIndex: true`, также вычисляется детерминированный хеш и сохраняется в synthetic-колонке `{field}_bi` (`Utf8`).
+5. После чтения ORM вызывает `decrypt(ciphertext, aad, context)` -> plaintext.
 
-## Подключение провайдеров
+## Настройка провайдеров
 
-Провайдеры передаются в опции модуля:
+Провайдеры передаются через `configureEntities`:
 
 ```ts
-YdbCoreModule.forRootAsync({
-  useFactory: () => ({
-    endpoint: '...',
-    auth_type: 'auth_key',
-    authOptions: { authorized_key_path: './authorized_key.json' },
-    encryptionProvider: myEncryptionProvider,
-    blindIndexProvider: myBlindIndexProvider,
-  }),
+import { configureEntities } from '@ycforge/ydb-orm';
+
+configureEntities([UserEntity], {
+  executor,
+  encryptionProvider: myEncryptionProvider,
+  blindIndexProvider: myBlindIndexProvider,
 });
 ```
 
@@ -52,7 +50,7 @@ interface YdbBlindIndexProvider {
 
 {% note warning %}
 
-Провайдеры входят в **отдельный пакет** `@ycforge/orm-security-providers` (AES-256-GCM, HMAC-SHA256, KMS-провайдеры). В составе `@ycforge/ydb-orm` есть только заглушка `Base64TestEncryptionProvider` — она подходит для тестов, но не обеспечивает реальной криптографии.
+Провайдеры поставляются в **отдельном пакете** `@ycforge/orm-security-providers` (AES-256-GCM, HMAC-SHA256, KMS-провайдеры). `@ycforge/ydb-orm` содержит только заглушку `Base64TestEncryptionProvider` — подходит для тестов, но не обеспечивает реальной криптографии.
 
 {% endnote %}
 
@@ -97,7 +95,7 @@ export class AesGcmEncryptionProvider
 
 {% note warning %}
 
-Ключи передавайте через переменные окружения — не хардкодьте их в коде и не коммитьте в репозиторий.
+Передавайте ключи через переменные окружения — не хардкодьте их в коде и не коммитте в репозиторий.
 
 {% endnote %}
 
@@ -122,7 +120,7 @@ const user = await UserEntity.find({ email: 'ivan@example.com' });
 
 ### Без blind index
 
-Поиск по такому полю невозможен — ORM бросит ошибку.
+Поиск по такому полю невозможен — ORM выбрасывает ошибку.
 
 ```ts
 @YdbEncrypted({ blindIndex: false })
@@ -134,7 +132,7 @@ await UserEntity.find({ government_id: '1234567890' });
 
 ## AAD (Additional Authenticated Data)
 
-Поля, помеченные `@YdbSecurityAAD()`, включаются в AAD при шифровании других полей. Декоратор может применяться только к колонкам первичного ключа. Если значение такого поля изменится, существующие ciphertext'ы перестанут расшифровываться — защита от подмены связанных данных.
+Поля, помеченные `@YdbSecurityAAD()`, включаются в AAD при шифровании других полей. Этот декоратор можно применять только к первичным ключам. Если такое поле изменится, существующие ciphertext'ы перестанут расшифровываться — защита от подмены связанных данных.
 
 ```ts
 @YdbEntity('users')
@@ -148,11 +146,11 @@ export class UserEntity extends YdbBaseEntity {
 }
 ```
 
-AAD-строка строится из полей в лексикографическом порядке: `uuid=<value>;...`.
+Строка AAD строится из полей в лексикографическом порядке: `uuid=<value>;...`.
 
 ### Обновление зашифрованных полей через `updateBy`
 
-Если зашифрованное поле обновляется через `updateBy`, ORM собирает AAD из AAD-полей, зафиксированных в `where`. Благодаря тому что AAD-поля — часть PK, однозначный контекст получается, когда все они заданы в условии:
+При обновлении зашифрованного поля через `updateBy` ORM строит AAD из AAD-полей, зафиксированных предикатом `where`. Поскольку AAD-поля являются частью PK, безопасный контекст доступен при наличии всех их в условии:
 
 ```ts
 // OK: AAD-поле uuid зафиксировано в where
@@ -162,10 +160,14 @@ await UserEntity.updateBy({ uuid: user.uuid }, { email: 'new@example.com' });
 await UserEntity.updateBy({ name: 'Иван' }, { email: 'new@example.com' });
 ```
 
-Для явного переопределения AAD используйте `aadOverride` в опциях `@YdbEncrypted({ aadOverride: '...' })`.
+Для явного переопределения AAD используйте `aadOverride` в `@YdbEncrypted({ aadOverride: '...' })`.
 
-## Особенности
+## Примечания
 
-- Объект сущности хранит **plaintext**. ORM шифрует копию перед UPSERT и не мутирует исходный объект — иначе повторный `save()` зашифровал бы ciphertext повторно.
-- `null` / `undefined` не шифруются.
-- При чтении ORM расшифровывает поля автоматически; synthetic-колонки `{field}_bi` в инстанс не попадают и исключаются из `toJSON()`.
+- Объект сущности хранит **plaintext**. ORM шифрует копию перед UPSERT и не мутирует исходный объект — иначе повторный `save()` зашифрует уже ciphertext.
+- Значения `null` / `undefined` не шифруются.
+- При чтении ORM расшифровывает поля автоматically; synthetic-колонки `{field}_bi` не появляются на инстансе и исключаются из `toJSON()`.
+
+## Следующие шаги
+
+- [Шифрование (NestJS)](nest/encryption.md) — если вы используете NestJS, см. передачу провайдеров через опции модуля

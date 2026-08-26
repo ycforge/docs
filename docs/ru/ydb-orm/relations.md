@@ -222,7 +222,7 @@ await UserEntity.findAll({
 ORM не управляет каскадами автоматически — связи сохраняются через FK-колонки. Обычно все записи создаются в одной [транзакции](transactions.md):
 
 ```ts
-await this.trxManager.runInTransaction(async (trx) => {
+await txManager.runInTransaction(async (trx) => {
   const opts = { trx };
 
   const user = new UserEntity();

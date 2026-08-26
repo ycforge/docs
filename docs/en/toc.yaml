@@ -27,7 +27,7 @@ items:
         href: ydb-orm/entity.md
       - name: Active Record
         href: ydb-orm/active-record.md
-      - name: Repository (DI)
+      - name: Repository
         href: ydb-orm/repository.md
       - name: QueryBuilder
         href: ydb-orm/query-builder.md
@@ -61,5 +61,21 @@ items:
         href: ydb-orm/validation.md
       - name: API reference
         href: ydb-orm/api.md
+      - name: NestJS adapter
+        items:
+          - name: Overview
+            href: ydb-orm/nest/overview.md
+          - name: Quick start
+            href: ydb-orm/nest/quick-start.md
+          - name: Repository injection
+            href: ydb-orm/nest/repository.md
+          - name: Transactions
+            href: ydb-orm/nest/transactions.md
+          - name: Schema sync
+            href: ydb-orm/nest/schema-sync.md
+          - name: Encryption
+            href: ydb-orm/nest/encryption.md
+          - name: Authentication
+            href: ydb-orm/nest/authentication.md
       - name: Development
         href: ydb-orm/development.md

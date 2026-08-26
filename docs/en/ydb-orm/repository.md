@@ -118,6 +118,6 @@ export class AdminService {
 |----------|-------------|
 | **Active Record** | quick scripts, simple services, familiar TypeORM style |
 | **Repository (standalone)** | multi-entity scripts, services without DI, programmatic access |
-| **Repository + DI** | NestJS services, testability, explicit dependencies |
+| **Repository + DI** (NestJS) | NestJS services, testability, explicit dependencies |
 
 Active Record remains fully functional: static methods like `UserEntity.find(...)` are a thin facade delegating to the same `YdbRepository`. Both styles can be mixed in one application.

@@ -222,7 +222,7 @@ Limitations:
 The ORM does not manage cascades automatically — relations are saved through FK columns. Typically all records are created in a single [transaction](transactions.md):
 
 ```ts
-await this.trxManager.runInTransaction(async (trx) => {
+await txManager.runInTransaction(async (trx) => {
   const opts = { trx };
 
   const user = new UserEntity();

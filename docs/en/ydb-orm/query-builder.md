@@ -146,7 +146,7 @@ const events = await EventEntity.query()
 ### Inside a transaction
 
 ```ts
-await this.trxManager.runInTransaction(async (trx) => {
+await txManager.runInTransaction(async (trx) => {
   const photos = await PhotoEntity.query()
     .where({ is_public: true })
     .options({ trx })

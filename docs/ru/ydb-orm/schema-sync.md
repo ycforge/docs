@@ -1,71 +1,43 @@
 # Schema sync
 
-`schema sync` — аналог `synchronize` в TypeORM: при старте приложения ORM подстраивает схему БД под метаданные всех зарегистрированных сущностей.
+`schema sync` — аналог `synchronize` в TypeORM: ORM.adjustирует схему БД под метаданные всех зарегистрированных сущностей.
 
-## Включение
-
-Задайте `sync: true` в опциях `forRootAsync`:
+## Standalone-использование
 
 ```ts
-YdbCoreModule.forRootAsync({
-  useFactory: () => ({
-    endpoint: '...',
-    auth_type: 'auth_key',
-    authOptions: { authorized_key_path: './authorized_key.json' },
-    sync: true, // только для dev!
-  }),
-});
+import { YdbSchemaSyncer } from '@ycforge/ydb-orm';
+import { UserEntity, PostEntity } from './entities';
+
+const syncer = new YdbSchemaSyncer(executor);
+
+// Проверка без изменений
+const issues = await syncer.verify([UserEntity, PostEntity]);
+console.log('Проблемы схемы:', issues);
+
+// Применение изменений (CREATE TABLE, ALTER TABLE ADD COLUMN)
+await syncer.sync([UserEntity, PostEntity]);
 ```
 
 {% note warning %}
 
-В продакшене используйте [миграции](migrations.md) вместо `sync: true`.
+В продакшене используйте [миграции](migrations.md) вместо `sync`.
 
 {% endnote %}
 
-## Что делает синхронизация
+## Что делает sync
 
-При старте приложения, после создания драйвера, ORM для каждой зарегистрированной сущности:
+После создания драйвера ORM выполняет следующее для каждой зарегистрированной сущности:
 
 - **нет таблицы** → `CREATE TABLE`;
 - **нет колонок** → `ALTER TABLE ADD COLUMN`;
-- **лишние колонки** → только предупреждение в лог (данные не удаляются);
-- **расхождение типа колонки или PK** → ошибка (YDB не позволяет менять тип колонки или PK, нужна миграция).
+- **лишние колонки** → только предупреждение в логе (данные не удаляются);
+- **несовпадение типа колонки или PK** → ошибка (YDB не может изменить тип колонки или PK; необходима миграция).
 
-Описание таблицы получается через Table service `DescribeTable` (query service метаданные колонок не отдаёт). Создаются также synthetic-колонки `{field}_bi` для blind index и join-таблицы many-to-many.
+Описание таблицы получается через Table service `DescribeTable` (query service не возвращает метаданные колонок). Synthetic-колонки `{field}_bi` для blind index и join-таблицы many-to-many также создаются.
 
-## Ручной вызов
+## Генераторы DDL
 
-Провайдер `YDB_SCHEMA_SYNC` экспортируется корневым модулем. Можно проверить или применить схему вручную.
-
-```ts
-import { Inject, Injectable } from '@nestjs/common';
-import { YDB_SCHEMA_SYNC, YdbSchemaSyncer } from '@ycforge/ydb-orm';
-import { UserEntity, PostEntity } from './entities';
-
-@Injectable()
-export class SchemaService {
-  constructor(
-    @Inject(YDB_SCHEMA_SYNC)
-    private readonly syncer: YdbSchemaSyncer,
-  ) {}
-
-  // Проверка без изменений
-  async check() {
-    const issues = await this.syncer.verify([UserEntity, PostEntity]);
-    console.log('Проблемы схемы:', issues);
-  }
-
-  // Принудительная синхронизация
-  async apply() {
-    await this.syncer.sync([UserEntity, PostEntity]);
-  }
-}
-```
-
-## DDL-генераторы
-
-Генераторы DDL доступны в публичном API — их можно использовать для построения миграций вручную:
+Генераторы DDL доступны в публичном API — можно использовать для ручного создания миграций:
 
 ```ts
 import {
@@ -82,4 +54,8 @@ console.log(createYql);
 
 ## Требования
 
-Каждая сущность обязана иметь PK-колонку (`@YdbPrimaryColumn` или `uuid`). Иначе sync упадёт с понятной ошибкой.
+Каждая сущность обязана иметь PK-колонку (`@YdbPrimaryColumn` или `uuid`). Иначе sync падает с понятной ошибкой.
+
+## Следующие шаги
+
+- [Schema sync (NestJS)](nest/schema-sync.md) — если вы используете NestJS, см. инжектируемый паттерн

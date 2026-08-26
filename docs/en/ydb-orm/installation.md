@@ -19,7 +19,7 @@ npm install @ycforge/ydb-orm
 
 ## Peer dependencies
 
-For NestJS integration, add the peer dependencies:
+The core package has no required peer dependencies. For [NestJS integration](nest/overview.md), add:
 
 ```bash
 yarn add @nestjs/common @nestjs/core reflect-metadata rxjs
@@ -27,7 +27,7 @@ yarn add @nestjs/common @nestjs/core reflect-metadata rxjs
 
 {% note info %}
 
-Decorators require `reflect-metadata`. Import it once in the application entry point (`main.ts`).
+Decorators require `reflect-metadata`. Import it once in the application entry point.
 
 {% endnote %}
 

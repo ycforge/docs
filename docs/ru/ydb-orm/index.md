@@ -2,7 +2,7 @@
 
 **@ycforge/ydb-orm** — TypeORM-like ORM для [YDB (Yandex Database)](https://ydb.tech/) на TypeScript.
 
-Библиотека предоставляет Active Record, отношения (relations), шифрование полей с blind index, schema sync, транзакции и интеграцию с NestJS.
+Библиотека предоставляет Active Record, отношения (relations), шифрование полей с blind index, schema sync, транзакции и NestJS-адаптер.
 
 {% note info %}
 
@@ -18,8 +18,8 @@
 - **Схема БД** — `schema sync` (аналог `synchronize` в TypeORM) и генераторы DDL для миграций.
 - **Миграции** — классы с `up`/`down`, CLI-команды `migration:create|generate|run|revert|show`.
 - **Транзакции** — `YdbTransactionManager.runInTransaction()`.
-- **NestJS-интеграция** — `YdbCoreModule.forRootAsync()` + `YdbOrmModule.forFeature()`.
-- **Использование без NestJS** — `createDriver` / `createExecutor` / `configureEntities` для скриптов и CLI.
+- **NestJS-адаптер** — `YdbCoreModule.forRootAsync()` + `YdbOrmModule.forFeature()` с DI-инжекцией (см. [NestJS-документацию](nest/overview.md)).
+- **Использование без NestJS** — `createDriver` / `createExecutor` / `configureEntities` для скриптов, Lambda и CLI.
 
 ## Принципы
 
@@ -31,7 +31,7 @@
 
 - Runtime: **Node.js ≥ 22**, ESM (`"type": "module"`).
 - Драйвер: `@ydbjs/*` (новое поколение SDK YDB).
-- Интеграция: NestJS (`@nestjs/common`, `@nestjs/core` — peer-зависимости).
+- Опционально: интеграция с NestJS через `@ycforge/ydb-orm/nest` (peer-зависимости: `@nestjs/common`, `@nestjs/core`).
 
 ## Репозиторий
 
@@ -42,6 +42,7 @@
 ## С чего начать
 
 1. [Установка](installation.md)
-2. [Быстрый старт](quick-start.md)
-3. [Сущности и декораторы](entity.md)
-4. [Active Record](active-record.md)
+2. [Быстрый старт](quick-start.md) (standalone)
+3. [Быстрый старт (NestJS)](nest/quick-start.md) (если вы используете NestJS)
+4. [Сущности и декораторы](entity.md)
+5. [Active Record](active-record.md)

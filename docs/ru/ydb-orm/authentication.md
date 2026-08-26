@@ -1,64 +1,55 @@
 # Аутентификация
 
-`@ycforge/ydb-orm` не хранит собственных способов авторизации. Вместо этого он принимает готовый `AuthManager` из пакета `@ycforge/auth` и сам адаптирует его в `CredentialsProvider` для `@ydbjs/auth`.
+`@ycforge/ydb-orm` не хранит собственные стратегии аутентификации. Вместо этого он принимает готовый `AuthManager` из `@ycforge/auth` и адаптирует его в `CredentialsProvider` для `@ydbjs/auth`.
 
-Если вам нужно переиспользовать одну конфигурацию авторизации для YDB и для Yandex Cloud API (например, KMS), создайте `AuthManager` один раз и передайте его в оба модуля.
+Если вы хотите повторно использовать одну конфигурацию аутентификации для YDB и Yandex Cloud API (например, KMS), создайте один `AuthManager` и передайте его в оба модуля.
 
-## Поддерживаемые способы
+## Поддерживаемые стратегии
 
-Все стратегии задаются через `@ycforge/auth`:
+Все стратегии настраиваются через `@ycforge/auth`:
 
 | Стратегия | Описание |
 | --- | --- |
 | `iam_token` | Статический IAM-токен |
-| `metadata` | IAM-токен из сервиса метаданных ВМ (только в Yandex Cloud) |
-| `auth_key` | Авторизованный ключ сервисного аккаунта → JWT → IAM-токен |
-| `access_token` | Статический access-токен (YDB only) |
-| `anonymous` | Анонимный доступ (локальная YDB) |
-| `static` | Логин/пароль (YDB only) |
+| `metadata` | IAM-токен через metadata-сервис VM (только Yandex Cloud) |
+| `auth_key` | Ключ сервисного аккаунта → JWT → IAM-токен |
+| `access_token` | Статический access-токен (только YDB) |
+| `anonymous` | Анонимный доступ (локальный YDB) |
+| `static` | Имя пользователя/пароль (только YDB) |
 
-Подробнее о стратегиях, capability-матрице и YDB-адаптере см. в документации [@ycforge/auth](../auth/index.md).
+Подробнее о стратегиях — в документации [@ycforge/auth](../auth/index.md).
 
-## Передача AuthManager в модуль
+## Standalone-использование
 
-Опция `auth` принимает готовый `AuthManager`:
+Передайте опцию `auth` в `createDriver`:
 
 ```ts
-import { Module } from '@nestjs/common';
-import { YdbCoreModule } from '@ycforge/ydb-orm';
+import { createDriver, createExecutor } from '@ycforge/ydb-orm';
 import { createAuth, authKeyFromFile } from '@ycforge/auth';
 
-@Module({
-  imports: [
-    YdbCoreModule.forRootAsync({
-      useFactory: () => ({
-        endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/.../...',
-        auth: createAuth(authKeyFromFile('./authorized_key.json')),
-        sync: true, // только для dev!
-      }),
-    }),
-  ],
-})
-export class AppModule {}
+const driver = await createDriver({
+  endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/.../...',
+  auth: createAuth(authKeyFromFile('./authorized_key.json')),
+});
+
+const executor = createExecutor(driver);
 ```
 
-ORM внутри вызывает `createYdbCredentialsProvider(auth, YDB_AUTH_USAGE, { endpoint, secure })` из `@ycforge/auth/ydb`. Указание скоупа `YDB_AUTH_USAGE` обязательно — так адаптер проверяет, что выбранная стратегия совместима с YDB (например, `static` нельзя использовать для `YCLOUD_AUTH_USAGE`).
+ORM внутри вызывает `createYdbCredentialsProvider(auth, YDB_AUTH_USAGE, { endpoint, secure })` из `@ycforge/auth/ydb`. Область `YDB_AUTH_USAGE` обязательна — это позволяет адаптеру проверить, что выбранная стратегия совместима с YDB.
 
 ## Передача готового CredentialsProvider
 
-Если нужно передать собственный провайдер (например, в тестах), используйте опцию `credentialsProvider`:
+Для передачи кастомного провайдера (например, в тестах) используйте опцию `credentialsProvider`:
 
 ```ts
-YdbCoreModule.forRootAsync({
-  useFactory: () => ({
-    endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/.../...',
-    credentialsProvider: myTestProvider,
-  }),
-})
+const driver = await createDriver({
+  endpoint: 'grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/.../...',
+  credentialsProvider: myTestProvider,
+});
 ```
 
-Нельзя одновременно задавать `credentialsProvider` и `auth` (или `driverOptions.credentialsProvider`) — это ошибка конфигурации.
+Одновременная установка `credentialsProvider` и `auth` — ошибка конфигурации.
 
-## Авторизация вне NestJS
+## Следующие шаги
 
-См. раздел [Без NestJS (standalone)](standalone.md).
+- [Аутентификация (NestJS)](nest/authentication.md) — если вы используете NestJS, см. передачу `auth` через опции модуля
